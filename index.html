@@ -4,105 +4,176 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#23734b">
-<link rel="manifest" href="manifest.json?v=7">
-<link rel="icon" type="image/png" sizes="192x192" href="orgo-icon-v2-192.png?v=7">
-<link rel="icon" type="image/png" sizes="512x512" href="orgo-icon-v2-512.png?v=7">
-<link rel="apple-touch-icon" href="orgo-icon-v2-192.png?v=7">
 <title>오르GO · Mountain Beside Home</title>
+<link rel="manifest" href="manifest.json?v=8">
+<link rel="icon" type="image/png" sizes="192x192" href="orgo-icon-v2-192.png?v=8">
+<link rel="icon" type="image/png" sizes="512x512" href="orgo-icon-v2-512.png?v=8">
+<link rel="apple-touch-icon" href="orgo-icon-v2-192.png?v=8">
 <style>
-:root{--bg:#f5f3ec;--card:#fff;--ink:#1f2a24;--muted:#6b746e;--green:#23734b;--soft:#e7f0e9;--line:#e3e1da}
+:root{--bg:#f5f3ec;--card:#fff;--ink:#1f2a24;--muted:#6b746e;--green:#23734b;--green2:#3d8b60;--soft:#e7f0e9;--line:#e3e1da;--orange:#ed8a32;--danger:#a43d36}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;color:var(--ink)}
-main{max-width:520px;margin:auto;padding:18px 15px 84px}.brand{font-size:30px;font-weight:900}.tag{font-size:13px;color:var(--muted);margin:2px 0 16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;margin:12px 0}h2{font-size:18px;margin:0 0 12px}
-.label{font-size:12px;color:var(--muted);margin:8px 0 5px}input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px}
-button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800}.primary{background:var(--green);color:white}.secondary{background:#edf0ed}.ghost{background:#fff;border:1px solid var(--line)}
-.row{display:flex;gap:9px}.row>*{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.small{font-size:12px;color:var(--muted);line-height:1.5}
-.bigcount{text-align:center;font-size:64px;font-weight:900;margin:7px 0}.center{text-align:center}.progress{height:14px;background:#eceeea;border-radius:20px;overflow:hidden;margin:10px 0}.bar{height:100%;background:var(--green)}
-.num{font-size:21px;font-weight:800}.stat{background:#faf9f5;border-radius:13px;padding:13px}.history{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}.hidden{display:none!important}
+main{max-width:520px;margin:auto;padding:18px 15px 80px}.brand{font-size:29px;font-weight:900}.tag{font-size:13px;color:var(--muted);margin:2px 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:19px;padding:17px;margin:12px 0;box-shadow:0 2px 8px rgba(31,42,36,.035)}
+h2{font-size:18px;margin:0 0 12px}.label{font-size:12px;color:var(--muted);margin:8px 0 5px}
+input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:white}
+button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
+.primary{background:var(--green);color:white}.secondary{background:#edf0ed;color:var(--ink)}.ghost{background:white;border:1px solid var(--line)}.danger{background:#fff4f2;color:var(--danger);border:1px solid #efd5d1}
+.row{display:flex;gap:9px}.row>*{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat{background:#faf9f5;border-radius:13px;padding:13px}.num{font-size:21px;font-weight:900}.bigcount{text-align:center;font-size:58px;font-weight:900;margin:7px 0}
+.center{text-align:center}.small{font-size:12px;color:var(--muted);line-height:1.5}.hidden{display:none}
+.progress{height:14px;background:#eceeea;border-radius:20px;overflow:hidden;margin:10px 0}.bar{height:100%;background:linear-gradient(90deg,var(--green2),var(--green))}
+.target{font-size:25px;font-weight:900}.pill{display:inline-block;padding:6px 10px;border-radius:20px;background:var(--soft);color:var(--green);font-size:12px;font-weight:800}
+.history{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}.history:first-child{border-top:0}
+.mountain-stage{height:155px;position:relative;overflow:hidden;border-radius:16px;background:linear-gradient(#dff1f4 0 62%,#eef3e8 62%);margin:8px 0 12px}
+.mountain-stage svg{width:100%;height:100%;display:block}.climber{position:absolute;bottom:18px;left:9%;font-size:25px;filter:drop-shadow(0 1px 1px #fff);transition:left .4s ease}
+.mountain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.badge{border:1px solid var(--line);border-radius:14px;padding:8px 5px;text-align:center;background:#fbfbf8}
+.badge svg{width:100%;height:56px}.badge b{display:block;font-size:12px}.badge span{font-size:11px;color:var(--muted)}
+.celebrate{animation:pop .55s ease}@keyframes pop{0%{transform:scale(.96)}55%{transform:scale(1.035)}100%{transform:scale(1)}}
+.note{padding:10px 12px;border-radius:12px;background:#fff8e9;font-size:12px;line-height:1.5;color:#6f5a2f}
 </style>
 </head>
 <body><main>
-<div class="brand">오르GO</div>
+<div class="brand">오르GO <span class="pill">v0.8</span></div>
 <div class="tag">Mountain Beside Home · 집 옆 계단이 나의 산이 된다</div>
 
-<section id="setupScreen" class="card hidden">
-<h2>내가 오르는 건물 등록</h2>
+<section id="setupCard" class="card">
+<h2>내가 오르는 건물</h2>
 <div class="label">건물 이름</div><input id="building" placeholder="예: 우리 아파트 101동">
 <div class="grid">
 <div><div class="label">시작층</div><input id="startFloor" placeholder="예: B1"></div>
-<div><div class="label">도착층</div><input id="topFloor" type="number" placeholder="예: 19"></div>
+<div><div class="label">도착층</div><input id="topFloor" type="number" min="1" placeholder="예: 18"></div>
 </div>
-<div class="label">한 번 오를 때 총 계단 수</div><input id="steps" type="number" placeholder="예: 370">
-<div class="label">계단 한 칸 평균 높이(cm)</div><input id="stepHeight" type="number" step=".1" placeholder="예: 15.4">
-<div style="height:12px"></div><button class="primary" onclick="saveBuilding()">등록하고 시작하기</button>
-<p class="small">처음 한 번만 등록합니다. 다음 실행부터는 바로 운동 화면이 나옵니다.</p>
+<div class="label">한 번 오를 때 총 계단 수</div><input id="steps" type="number" min="1" placeholder="예: 370">
+<div class="label">계단 한 칸 높이(cm)</div><input id="stepHeight" type="number" min="1" step=".1" placeholder="예: 15.4">
+<div style="height:10px"></div><button class="primary" onclick="saveBuilding()">등록하고 시작하기</button>
+<p class="small">건물정보를 수정해도 기존 운동기록은 그대로 유지됩니다.</p>
 </section>
 
-<section id="workoutScreen" class="hidden">
-<div class="card">
-<div class="label">내 Mountain Beside Home</div>
-<div id="buildingName" style="font-size:23px;font-weight:900"></div>
-<div id="buildingInfo" class="small"></div>
+<section id="buildingCard" class="card hidden">
+<div class="label">내 Mountain Beside Home</div><div id="buildingName" style="font-size:24px;font-weight:900"></div>
+<div id="buildingInfo" class="small" style="margin-top:5px"></div>
 <div style="height:10px"></div><button class="ghost" onclick="editBuilding()">건물정보 수정</button>
-</div>
+</section>
 
-<div class="card">
-<h2>오늘 오른 횟수</h2>
-<div class="center"><div class="small">정상에 도착할 때마다 눌러주세요</div><div id="roundCount" class="bigcount">0회</div><div id="liveInfo" class="small">0계단 · 상승 0m</div></div>
+<section id="climbCard" class="card hidden">
+<h2>오늘 오른 횟수</h2><div class="center"><div class="small">정상에 도착할 때마다 눌러주세요</div>
+<div id="roundCount" class="bigcount">0회</div><div id="liveInfo" class="small">0층 · 0계단 · 상승 0m</div></div>
 <div class="row" style="margin-top:12px"><button class="secondary" onclick="changeRound(-1)">−1</button><button class="primary" onclick="changeRound(1)">+1 오르GO</button></div>
 <div style="height:10px"></div><button class="primary" onclick="saveWorkout()">오늘 운동 저장</button>
-</div>
+</section>
 
-<div class="card">
+<section id="mountainCard" class="card hidden">
 <h2>지금 오르고 있는 산</h2>
-<div class="center"><div style="font-size:58px">⛰️</div><div id="mountainName" style="font-size:24px;font-weight:900"></div><div id="mountainHeight" class="small"></div>
-<div class="progress"><div id="bar" class="bar"></div></div><div id="progressText" class="num"></div><div id="remainText" class="small"></div></div>
-</div>
+<div id="mountainStage" class="mountain-stage"><div id="mountainArt"></div><div id="climber" class="climber">🚶‍♂️</div></div>
+<div class="center"><div id="mountainName" class="target"></div><div id="mountainHeight" class="small"></div>
+<div class="progress"><div id="bar" class="bar" style="width:0%"></div></div>
+<div id="progressText" class="num"></div><div id="remainText" class="small"></div></div>
+</section>
 
-<div class="card">
+<section id="rangeCard" class="card hidden">
+<h2>나의 산맥</h2>
+<div class="small">누적 상승고도를 큰 산부터 환산해 보여줍니다.</div>
+<div id="mountainCollection" class="mountain-grid"></div>
+<div id="collectionNote" class="note" style="margin-top:10px"></div>
+</section>
+
+<section id="summaryCard" class="card hidden">
 <h2>누적 운동기록</h2>
 <div class="grid">
 <div class="stat"><div class="label">누적 상승</div><div id="totalHeight" class="num">0m</div></div>
 <div class="stat"><div class="label">누적 계단</div><div id="totalSteps" class="num">0</div></div>
+<div class="stat"><div class="label">누적 층수</div><div id="totalFloors" class="num">0층</div></div>
 <div class="stat"><div class="label">총 오른 횟수</div><div id="totalRounds" class="num">0회</div></div>
-<div class="stat"><div class="label">현재 산</div><div id="stageName" class="num">-</div></div>
 </div><div id="history" style="margin-top:12px"></div>
-</div>
+</section>
+
+<section id="resetCard" class="card hidden">
+<h2>설정</h2><div class="small">전체 초기화는 건물정보와 모든 운동기록을 삭제합니다.</div>
+<div style="height:10px"></div><button class="danger" onclick="resetAll()">전체 초기화</button>
 </section>
 </main>
-
 <script>
-const mountains=[{name:"남산",height:262},{name:"북한산",height:836},{name:"한라산",height:1947},{name:"후지산",height:3776},{name:"몽블랑",height:4808},{name:"킬리만자로",height:5895},{name:"에베레스트",height:8848}];
+const mountains=[
+ {name:"남산",height:262,type:"tower"},
+ {name:"관악산",height:632,type:"rock"},
+ {name:"북한산",height:836,type:"peaks"},
+ {name:"한라산",height:1947,type:"volcano"},
+ {name:"백두산",height:2744,type:"lake"},
+ {name:"후지산",height:3776,type:"fuji"},
+ {name:"몽블랑",height:4808,type:"snow"},
+ {name:"킬리만자로",height:5895,type:"wide"},
+ {name:"에베레스트",height:8848,type:"everest"}
+];
 let buildingData=JSON.parse(localStorage.getItem("orgo_building_v06")||"null");
 let logs=JSON.parse(localStorage.getItem("orgo_logs_v06")||"[]"),rounds=0;
-const fmt=(n,d=0)=>Number(n).toLocaleString("ko-KR",{maximumFractionDigits:d,minimumFractionDigits:d});
-
-function showSetup(){setupScreen.classList.remove("hidden");workoutScreen.classList.add("hidden")}
-function showWorkout(){
- setupScreen.classList.add("hidden");workoutScreen.classList.remove("hidden");
- buildingName.textContent=buildingData.name;
- const one=buildingData.steps*(buildingData.stepHeight/100);
- buildingInfo.textContent=`${buildingData.startFloor} → ${buildingData.topFloor}층 · 1회 ${buildingData.steps.toLocaleString()}계단 · 상승 약 ${fmt(one,1)}m`;
- render();
+function fmt(n,d=0){return Number(n).toLocaleString("ko-KR",{maximumFractionDigits:d,minimumFractionDigits:d})}
+function floorCount(sf,tf){
+ const s=String(sf||"").trim().toUpperCase(), top=Number(tf)||0;
+ const bm=s.match(/^B(\d+)$/); if(bm)return top+Number(bm[1]);
+ const n=Number(s); if(Number.isFinite(n)&&n!==0)return Math.max(0,top-n);
+ return top;
+}
+function art(m,mini=false){
+ let extra="";
+ if(m.type==="tower")extra='<rect x="49" y="25" width="3" height="30" fill="#555"/><circle cx="50.5" cy="23" r="4" fill="#ed8a32"/>';
+ if(m.type==="lake")extra='<ellipse cx="50" cy="66" rx="19" ry="4" fill="#9dd7e5"/>';
+ if(m.type==="fuji")extra='<path d="M39 43 L50 25 L61 43 L56 40 L51 45 L46 39 Z" fill="white"/>';
+ if(["snow","everest","wide"].includes(m.type))extra='<path d="M35 48 L50 25 L64 47 L57 43 L52 48 L47 41 L42 46 Z" fill="white"/>';
+ let path=m.type==="wide"?"M5 82 L26 57 L39 60 L52 32 L66 55 L78 54 L95 82 Z":
+          m.type==="peaks"?"M5 82 L28 48 L40 62 L58 31 L72 58 L83 49 L95 82 Z":
+          m.type==="rock"?"M5 82 L25 62 L38 55 L49 39 L62 56 L74 48 L95 82 Z":
+          "M5 82 L28 62 L50 28 L72 62 L95 82 Z";
+ return `<svg viewBox="0 0 100 90" aria-label="${m.name} 일러스트"><path d="${path}" fill="#5d8268"/><path d="M5 82 Q50 72 95 82 L95 90 L5 90Z" fill="#b8cda9"/>${extra}</svg>`;
 }
 function saveBuilding(){
  const name=building.value.trim(),sf=startFloor.value.trim(),tf=+topFloor.value,st=+steps.value,sh=+stepHeight.value;
- if(!name||!sf||!tf||!st||!sh)return alert("모든 건물정보를 입력해 주세요.");
+ if(!name||!sf||!tf||!st||!sh)return alert("건물 이름, 시작층, 도착층, 총 계단 수, 계단 높이를 입력해 주세요.");
  buildingData={name,startFloor:sf,topFloor:tf,steps:st,stepHeight:sh};
- localStorage.setItem("orgo_building_v06",JSON.stringify(buildingData));showWorkout();
+ localStorage.setItem("orgo_building_v06",JSON.stringify(buildingData));showApp();
 }
-function editBuilding(){building.value=buildingData.name;startFloor.value=buildingData.startFloor;topFloor.value=buildingData.topFloor;steps.value=buildingData.steps;stepHeight.value=buildingData.stepHeight;showSetup()}
-function changeRound(d){rounds=Math.max(0,rounds+d);roundCount.textContent=rounds+"회";const one=buildingData.steps*(buildingData.stepHeight/100);liveInfo.textContent=`${(rounds*buildingData.steps).toLocaleString()}계단 · 상승 ${fmt(rounds*one,1)}m`}
-function saveWorkout(){if(rounds<1)return alert("+1 오르GO로 횟수를 기록해 주세요.");const one=buildingData.steps*(buildingData.stepHeight/100);logs.push({ts:Date.now(),rounds,steps:rounds*buildingData.steps,height:rounds*one});localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));rounds=0;changeRound(0);render()}
+function editBuilding(){
+ setupCard.classList.remove("hidden");building.value=buildingData.name;startFloor.value=buildingData.startFloor||"";topFloor.value=buildingData.topFloor||"";steps.value=buildingData.steps;stepHeight.value=buildingData.stepHeight;window.scrollTo({top:0,behavior:"smooth"});
+}
+function showApp(){
+ if(!buildingData){setupCard.classList.remove("hidden");return}
+ setupCard.classList.add("hidden");[buildingCard,climbCard,mountainCard,rangeCard,summaryCard,resetCard].forEach(x=>x.classList.remove("hidden"));
+ buildingName.textContent=buildingData.name;const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
+ buildingInfo.textContent=`${buildingData.startFloor} → ${buildingData.topFloor}층 · 1회 ${fl}층 · ${buildingData.steps.toLocaleString()}계단 · 상승 약 ${fmt(one,1)}m`;render();
+}
+function changeRound(d){
+ rounds=Math.max(0,rounds+d);roundCount.textContent=rounds+"회";const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
+ liveInfo.textContent=`${(rounds*fl).toLocaleString()}층 · ${(rounds*buildingData.steps).toLocaleString()}계단 · 상승 ${fmt(rounds*one,1)}m`;
+}
+function saveWorkout(){
+ if(rounds<1)return alert("+1 오르GO로 횟수를 기록해 주세요.");
+ const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
+ logs.push({ts:Date.now(),rounds,steps:rounds*buildingData.steps,height:rounds*one,floors:rounds*fl});
+ localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));rounds=0;changeRound(0);mountainCard.classList.add("celebrate");setTimeout(()=>mountainCard.classList.remove("celebrate"),600);render();
+}
 function nextMountain(total){for(const m of mountains)if(total<m.height)return m;return mountains[mountains.length-1]}
-function render(){
- const H=logs.reduce((a,x)=>a+x.height,0),S=logs.reduce((a,x)=>a+x.steps,0),R=logs.reduce((a,x)=>a+x.rounds,0);
- const m=nextMountain(H),idx=mountains.indexOf(m),base=idx===0?0:mountains[idx-1].height,p=Math.min(100,Math.max(0,(H-base)/(m.height-base)*100));
- mountainName.textContent=m.name;mountainHeight.textContent=`정상 높이 ${m.height.toLocaleString()}m`;bar.style.width=p+"%";progressText.textContent=p.toFixed(1)+"%";remainText.textContent=`정상까지 ${fmt(Math.max(0,m.height-H),1)}m 남았습니다.`;
- totalHeight.textContent=fmt(H,1)+"m";totalSteps.textContent=S.toLocaleString();totalRounds.textContent=R+"회";stageName.textContent=m.name;
- history.innerHTML=logs.slice().reverse().slice(0,8).map(x=>`<div class="history"><div><b>${new Date(x.ts).toLocaleDateString("ko-KR")}</b><div class="small">${x.rounds}회</div></div><div style="text-align:right"><b>${fmt(x.height,1)}m</b><div class="small">${x.steps.toLocaleString()}계단</div></div></div>`).join("")||'<div class="small">아직 기록이 없습니다.</div>';
+function decompose(total){
+ let left=total,out=[];[...mountains].reverse().forEach(m=>{const c=Math.floor((left+1e-9)/m.height);if(c>0){out.push({m,c});left-=c*m.height}});return {out,left};
 }
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js"))}
-buildingData?showWorkout():showSetup();
-</script>
-</body></html>
+function render(){
+ const H=logs.reduce((a,x)=>a+(+x.height||0),0),S=logs.reduce((a,x)=>a+(+x.steps||0),0),R=logs.reduce((a,x)=>a+(+x.rounds||0),0);
+ const currentFl=floorCount(buildingData.startFloor,buildingData.topFloor);
+ const F=logs.reduce((a,x)=>a+(x.floors!=null?+x.floors:(+x.rounds||0)*currentFl),0);
+ const m=nextMountain(H),idx=mountains.indexOf(m),base=idx===0?0:mountains[idx-1].height;
+ let p=idx===mountains.length-1&&H>=m.height?100:Math.min(100,Math.max(0,(H-base)/(m.height-base)*100));
+ mountainArt.innerHTML=art(m);mountainName.textContent=m.name;mountainHeight.textContent=`정상 높이 ${m.height.toLocaleString()}m`;
+ bar.style.width=p+"%";progressText.textContent=`${p.toFixed(1)}%`;climber.style.left=`calc(${Math.min(88,8+p*.8)}% - 12px)`;
+ remainText.textContent=H>=m.height?`에베레스트 높이를 넘어섰습니다!`:`정상까지 ${fmt(m.height-H,1)}m 남았습니다.`;
+ totalHeight.textContent=fmt(H,1)+"m";totalSteps.textContent=S.toLocaleString();totalFloors.textContent=F.toLocaleString()+"층";totalRounds.textContent=R+"회";
+ const dc=decompose(H);
+ mountainCollection.innerHTML=dc.out.length?dc.out.map(x=>`<div class="badge">${art(x.m,true)}<b>${x.m} (${x.c})</b><span>${(x.m.height*x.c).toLocaleString()}m</span></div>`).join(""):`<div class="small" style="grid-column:1/-1">첫 산 남산을 향해 출발!</div>`;
+ collectionNote.textContent=dc.out.length?`산으로 환산한 높이 ${fmt(H-dc.left,0)}m · 남은 높이 ${fmt(dc.left,1)}m`:`남산 정상까지 ${fmt(262-H,1)}m 남았습니다.`;
+ history.innerHTML=logs.slice().reverse().slice(0,8).map(x=>{const f=x.floors!=null?x.floors:x.rounds*currentFl;return `<div class="history"><div><b>${new Date(x.ts).toLocaleDateString("ko-KR")}</b><div class="small">${x.rounds}회 · ${f}층</div></div><div style="text-align:right"><b>${fmt(x.height,1)}m</b><div class="small">${(+x.steps).toLocaleString()}계단</div></div></div>`}).join("")||'<div class="small">아직 기록이 없습니다.</div>';
+}
+function resetAll(){
+ if(!confirm("건물정보와 누적 운동기록을 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다."))return;
+ localStorage.removeItem("orgo_building_v06");localStorage.removeItem("orgo_logs_v06");location.reload();
+}
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=8"));
+showApp();
+</script></body></html>
