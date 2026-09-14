@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#23734b">
+<link rel="manifest" href="manifest.json">
+<title>오르GO · Mountain Beside Home</title>
+<style>
+:root{--bg:#f5f3ec;--card:#fff;--ink:#1f2a24;--muted:#6b746e;--green:#23734b;--soft:#e7f0e9;--line:#e3e1da}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;color:var(--ink)}
+main{max-width:520px;margin:auto;padding:18px 15px 84px}.brand{font-size:30px;font-weight:900}.tag{font-size:13px;color:var(--muted);margin:2px 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;margin:12px 0}h2{font-size:18px;margin:0 0 12px}
+.label{font-size:12px;color:var(--muted);margin:8px 0 5px}input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px}
+button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800}.primary{background:var(--green);color:white}.secondary{background:#edf0ed}.ghost{background:#fff;border:1px solid var(--line)}
+.row{display:flex;gap:9px}.row>*{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.small{font-size:12px;color:var(--muted);line-height:1.5}
+.bigcount{text-align:center;font-size:64px;font-weight:900;margin:7px 0}.center{text-align:center}.progress{height:14px;background:#eceeea;border-radius:20px;overflow:hidden;margin:10px 0}.bar{height:100%;background:var(--green)}
+.num{font-size:21px;font-weight:800}.stat{background:#faf9f5;border-radius:13px;padding:13px}.history{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}.hidden{display:none!important}
+</style>
+</head>
+<body><main>
+<div class="brand">오르GO</div>
+<div class="tag">Mountain Beside Home · 집 옆 계단이 나의 산이 된다</div>
+
+<section id="setupScreen" class="card hidden">
+<h2>내가 오르는 건물 등록</h2>
+<div class="label">건물 이름</div><input id="building" placeholder="예: 우리 아파트 101동">
+<div class="grid">
+<div><div class="label">시작층</div><input id="startFloor" placeholder="예: B1"></div>
+<div><div class="label">도착층</div><input id="topFloor" type="number" placeholder="예: 19"></div>
+</div>
+<div class="label">한 번 오를 때 총 계단 수</div><input id="steps" type="number" placeholder="예: 370">
+<div class="label">계단 한 칸 평균 높이(cm)</div><input id="stepHeight" type="number" step=".1" placeholder="예: 15.4">
+<div style="height:12px"></div><button class="primary" onclick="saveBuilding()">등록하고 시작하기</button>
+<p class="small">처음 한 번만 등록합니다. 다음 실행부터는 바로 운동 화면이 나옵니다.</p>
+</section>
+
+<section id="workoutScreen" class="hidden">
+<div class="card">
+<div class="label">내 Mountain Beside Home</div>
+<div id="buildingName" style="font-size:23px;font-weight:900"></div>
+<div id="buildingInfo" class="small"></div>
+<div style="height:10px"></div><button class="ghost" onclick="editBuilding()">건물정보 수정</button>
+</div>
+
+<div class="card">
+<h2>오늘 오른 횟수</h2>
+<div class="center"><div class="small">정상에 도착할 때마다 눌러주세요</div><div id="roundCount" class="bigcount">0회</div><div id="liveInfo" class="small">0계단 · 상승 0m</div></div>
+<div class="row" style="margin-top:12px"><button class="secondary" onclick="changeRound(-1)">−1</button><button class="primary" onclick="changeRound(1)">+1 오르GO</button></div>
+<div style="height:10px"></div><button class="primary" onclick="saveWorkout()">오늘 운동 저장</button>
+</div>
+
+<div class="card">
+<h2>지금 오르고 있는 산</h2>
+<div class="center"><div style="font-size:58px">⛰️</div><div id="mountainName" style="font-size:24px;font-weight:900"></div><div id="mountainHeight" class="small"></div>
+<div class="progress"><div id="bar" class="bar"></div></div><div id="progressText" class="num"></div><div id="remainText" class="small"></div></div>
+</div>
+
+<div class="card">
+<h2>누적 운동기록</h2>
+<div class="grid">
+<div class="stat"><div class="label">누적 상승</div><div id="totalHeight" class="num">0m</div></div>
+<div class="stat"><div class="label">누적 계단</div><div id="totalSteps" class="num">0</div></div>
+<div class="stat"><div class="label">총 오른 횟수</div><div id="totalRounds" class="num">0회</div></div>
+<div class="stat"><div class="label">현재 산</div><div id="stageName" class="num">-</div></div>
+</div><div id="history" style="margin-top:12px"></div>
+</div>
+</section>
+</main>
+
+<script>
+const mountains=[{name:"남산",height:262},{name:"북한산",height:836},{name:"한라산",height:1947},{name:"후지산",height:3776},{name:"몽블랑",height:4808},{name:"킬리만자로",height:5895},{name:"에베레스트",height:8848}];
+let buildingData=JSON.parse(localStorage.getItem("orgo_building_v06")||"null");
+let logs=JSON.parse(localStorage.getItem("orgo_logs_v06")||"[]"),rounds=0;
+const fmt=(n,d=0)=>Number(n).toLocaleString("ko-KR",{maximumFractionDigits:d,minimumFractionDigits:d});
+
+function showSetup(){setupScreen.classList.remove("hidden");workoutScreen.classList.add("hidden")}
+function showWorkout(){
+ setupScreen.classList.add("hidden");workoutScreen.classList.remove("hidden");
+ buildingName.textContent=buildingData.name;
+ const one=buildingData.steps*(buildingData.stepHeight/100);
+ buildingInfo.textContent=`${buildingData.startFloor} → ${buildingData.topFloor}층 · 1회 ${buildingData.steps.toLocaleString()}계단 · 상승 약 ${fmt(one,1)}m`;
+ render();
+}
+function saveBuilding(){
+ const name=building.value.trim(),sf=startFloor.value.trim(),tf=+topFloor.value,st=+steps.value,sh=+stepHeight.value;
+ if(!name||!sf||!tf||!st||!sh)return alert("모든 건물정보를 입력해 주세요.");
+ buildingData={name,startFloor:sf,topFloor:tf,steps:st,stepHeight:sh};
+ localStorage.setItem("orgo_building_v06",JSON.stringify(buildingData));showWorkout();
+}
+function editBuilding(){building.value=buildingData.name;startFloor.value=buildingData.startFloor;topFloor.value=buildingData.topFloor;steps.value=buildingData.steps;stepHeight.value=buildingData.stepHeight;showSetup()}
+function changeRound(d){rounds=Math.max(0,rounds+d);roundCount.textContent=rounds+"회";const one=buildingData.steps*(buildingData.stepHeight/100);liveInfo.textContent=`${(rounds*buildingData.steps).toLocaleString()}계단 · 상승 ${fmt(rounds*one,1)}m`}
+function saveWorkout(){if(rounds<1)return alert("+1 오르GO로 횟수를 기록해 주세요.");const one=buildingData.steps*(buildingData.stepHeight/100);logs.push({ts:Date.now(),rounds,steps:rounds*buildingData.steps,height:rounds*one});localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));rounds=0;changeRound(0);render()}
+function nextMountain(total){for(const m of mountains)if(total<m.height)return m;return mountains[mountains.length-1]}
+function render(){
+ const H=logs.reduce((a,x)=>a+x.height,0),S=logs.reduce((a,x)=>a+x.steps,0),R=logs.reduce((a,x)=>a+x.rounds,0);
+ const m=nextMountain(H),idx=mountains.indexOf(m),base=idx===0?0:mountains[idx-1].height,p=Math.min(100,Math.max(0,(H-base)/(m.height-base)*100));
+ mountainName.textContent=m.name;mountainHeight.textContent=`정상 높이 ${m.height.toLocaleString()}m`;bar.style.width=p+"%";progressText.textContent=p.toFixed(1)+"%";remainText.textContent=`정상까지 ${fmt(Math.max(0,m.height-H),1)}m 남았습니다.`;
+ totalHeight.textContent=fmt(H,1)+"m";totalSteps.textContent=S.toLocaleString();totalRounds.textContent=R+"회";stageName.textContent=m.name;
+ history.innerHTML=logs.slice().reverse().slice(0,8).map(x=>`<div class="history"><div><b>${new Date(x.ts).toLocaleDateString("ko-KR")}</b><div class="small">${x.rounds}회</div></div><div style="text-align:right"><b>${fmt(x.height,1)}m</b><div class="small">${x.steps.toLocaleString()}계단</div></div></div>`).join("")||'<div class="small">아직 기록이 없습니다.</div>';
+}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js"))}
+buildingData?showWorkout():showSetup();
+</script>
+</body></html>
