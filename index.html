@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#23734b">
 <title>오르GO · Mountain Beside Home</title>
-<link rel="manifest" href="manifest.json?v=8">
-<link rel="icon" type="image/png" sizes="192x192" href="orgo-icon-v2-192.png?v=8">
-<link rel="icon" type="image/png" sizes="512x512" href="orgo-icon-v2-512.png?v=8">
-<link rel="apple-touch-icon" href="orgo-icon-v2-192.png?v=8">
+<link rel="manifest" href="manifest.json?v=81">
+<link rel="icon" type="image/png" sizes="192x192" href="orgo-icon-v2-192.png?v=81">
+<link rel="icon" type="image/png" sizes="512x512" href="orgo-icon-v2-512.png?v=81">
+<link rel="apple-touch-icon" href="orgo-icon-v2-192.png?v=81">
 <style>
 :root{--bg:#f5f3ec;--card:#fff;--ink:#1f2a24;--muted:#6b746e;--green:#23734b;--green2:#3d8b60;--soft:#e7f0e9;--line:#e3e1da;--orange:#ed8a32;--danger:#a43d36}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;color:var(--ink)}
@@ -34,18 +34,27 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 </style>
 </head>
 <body><main>
-<div class="brand">오르GO <span class="pill">v0.8</span></div>
+<div class="brand">오르GO <span class="pill">v0.8.1</span></div>
 <div class="tag">Mountain Beside Home · 집 옆 계단이 나의 산이 된다</div>
+
+<section id="installCard" class="card hidden">
+<h2>오르GO를 홈 화면에 설치하세요</h2>
+<div class="small">한 번 설치하면 다음부터는 홈 화면의 오르GO 아이콘으로 바로 시작할 수 있습니다.</div>
+<div style="height:10px"></div><button id="installBtn" class="primary" onclick="installApp()">📱 오르GO 설치하기</button>
+<div id="installHelp" class="small" style="margin-top:9px"></div>
+</section>
 
 <section id="setupCard" class="card">
 <h2>내가 오르는 건물</h2>
 <div class="label">건물 이름</div><input id="building" placeholder="예: 우리 아파트 101동">
 <div class="grid">
-<div><div class="label">시작층</div><input id="startFloor" placeholder="예: B1"></div>
-<div><div class="label">도착층</div><input id="topFloor" type="number" min="1" placeholder="예: 18"></div>
+<div><div class="label">시작층</div><input id="startFloor" placeholder="예: B1 또는 1" oninput="buildBasementInputs()"></div>
+<div><div class="label">도착층</div><input id="topFloor" type="number" min="1" placeholder="예: 18" oninput="updateAutoSteps()"></div>
 </div>
-<div class="label">한 번 오를 때 총 계단 수</div><input id="steps" type="number" min="1" placeholder="예: 370">
-<div class="label">계단 한 칸 높이(cm)</div><input id="stepHeight" type="number" min="1" step=".1" placeholder="예: 15.4">
+<div id="basementInputs"></div>
+<div class="label">지상 일반층 한 층당 계단 수</div><input id="normalSteps" type="number" min="1" placeholder="예: 16" oninput="updateAutoSteps()">
+<div class="note" style="margin-top:10px"><b>자동 계산 총계단수: <span id="autoSteps">0</span>계단</b><br>예: B1→1층 30계단, 일반층 16계단, 18층 도착이면 30 + (17×16) = 302계단</div>
+<div class="note" style="margin-top:10px"><b>계단 높이는 16cm로 자동 계산합니다.</b><br>처음부터 복잡하게 재지 않아도 바로 시작할 수 있습니다.</div>
 <div style="height:10px"></div><button class="primary" onclick="saveBuilding()">등록하고 시작하기</button>
 <p class="small">건물정보를 수정해도 기존 운동기록은 그대로 유지됩니다.</p>
 </section>
@@ -126,14 +135,42 @@ function art(m,mini=false){
           "M5 82 L28 62 L50 28 L72 62 L95 82 Z";
  return `<svg viewBox="0 0 100 90" aria-label="${m.name} 일러스트"><path d="${path}" fill="#5d8268"/><path d="M5 82 Q50 72 95 82 L95 90 L5 90Z" fill="#b8cda9"/>${extra}</svg>`;
 }
+function buildBasementInputs(saved){
+ const raw=String(startFloor.value||"").trim().toUpperCase(), bm=raw.match(/^B(\d+)$/);
+ const n=bm?Math.max(0,Math.min(20,Number(bm[1])||0)):0,box=document.getElementById("basementInputs");
+ const prev=[...box.querySelectorAll("input")].map(x=>x.value); box.innerHTML="";
+ if(!n){updateAutoSteps();return}
+ for(let level=n;level>=1;level--){
+  const to=level===1?"1층":`B${level-1}`;
+  const wrap=document.createElement("div"); wrap.innerHTML=`<div class="label">B${level} → ${to} 계단 수</div><input class="basementStep" type="number" min="1" placeholder="직접 센 계단 수" oninput="updateAutoSteps()">`;
+  const inp=wrap.querySelector("input"),idx=n-level;
+  if(saved&&saved[idx]!=null)inp.value=saved[idx]; else if(prev[idx])inp.value=prev[idx];
+  box.appendChild(wrap);
+ }
+ updateAutoSteps();
+}
+function calcAutoSteps(){
+ const bs=[...document.querySelectorAll(".basementStep")].map(x=>Number(x.value)||0),tf=Number(topFloor.value)||0,ns=Number(normalSteps.value)||0;
+ return bs.reduce((a,b)=>a+b,0)+Math.max(0,tf-1)*ns;
+}
+function updateAutoSteps(){const el=document.getElementById("autoSteps");if(el)el.textContent=calcAutoSteps().toLocaleString("ko-KR")}
 function saveBuilding(){
- const name=building.value.trim(),sf=startFloor.value.trim(),tf=+topFloor.value,st=+steps.value,sh=+stepHeight.value;
- if(!name||!sf||!tf||!st||!sh)return alert("건물 이름, 시작층, 도착층, 총 계단 수, 계단 높이를 입력해 주세요.");
- buildingData={name,startFloor:sf,topFloor:tf,steps:st,stepHeight:sh};
+ const name=building.value.trim(),sf=String(startFloor.value||"").trim().toUpperCase(),bm=sf.match(/^B(\d+)$/),b=bm?+bm[1]:0,tf=+topFloor.value,ns=+normalSteps.value,sh=16;
+ const bs=[...document.querySelectorAll(".basementStep")].map(x=>+x.value);
+ const st=calcAutoSteps();
+ if(!name||!sf||!tf||!ns||bs.length!==b||bs.some(x=>!x))return alert("건물 이름, 시작층, 도착층과 필요한 계단 수를 입력해 주세요.");
+ if(!bm && !(Number(sf)>=1))return alert("시작층은 B1, B2 또는 1, 2처럼 입력해 주세요.");
+ if(!bm && Number(sf)!==1)return alert("현재 간편 자동계산은 지하층 또는 1층에서 시작하는 코스를 지원합니다.");
+ buildingData={name,startFloor:sf,basementFloor:b,basementSteps:bs,normalSteps:ns,topFloor:tf,steps:st,stepHeight:sh,autoCalculated:true};
  localStorage.setItem("orgo_building_v06",JSON.stringify(buildingData));showApp();
 }
 function editBuilding(){
- setupCard.classList.remove("hidden");building.value=buildingData.name;startFloor.value=buildingData.startFloor||"";topFloor.value=buildingData.topFloor||"";steps.value=buildingData.steps;stepHeight.value=buildingData.stepHeight;window.scrollTo({top:0,behavior:"smooth"});
+ setupCard.classList.remove("hidden");building.value=buildingData.name;topFloor.value=buildingData.topFloor||"";
+ startFloor.value=buildingData.startFloor||"B1";
+ const bm=String(buildingData.startFloor||"B1").toUpperCase().match(/^B(\d+)$/);
+ normalSteps.value=buildingData.normalSteps||"";buildBasementInputs(buildingData.basementSteps||[]);updateAutoSteps();
+ if(!buildingData.autoCalculated)document.getElementById("autoSteps").textContent=`기존 ${Number(buildingData.steps||0).toLocaleString("ko-KR")} (새 방식으로 수정 시 자동계산)`;
+ window.scrollTo({top:0,behavior:"smooth"});
 }
 function showApp(){
  if(!buildingData){setupCard.classList.remove("hidden");return}
@@ -174,6 +211,21 @@ function resetAll(){
  if(!confirm("건물정보와 누적 운동기록을 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다."))return;
  localStorage.removeItem("orgo_building_v06");localStorage.removeItem("orgo_logs_v06");location.reload();
 }
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=8"));
+let deferredInstallPrompt=null;
+function isInstalled(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
+function refreshInstallCard(){
+ if(isInstalled()){installCard.classList.add("hidden");return}
+ installCard.classList.remove("hidden");
+ if(deferredInstallPrompt){installBtn.textContent="📱 오르GO 설치하기";installHelp.textContent="버튼을 누르면 바로 설치할 수 있습니다."}
+ else{installBtn.textContent="📱 홈 화면에 설치하기";installHelp.textContent="설치창이 뜨지 않으면 브라우저 메뉴에서 ‘홈 화면에 추가’ 또는 ‘앱 설치’를 선택해 주세요."}
+}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;refreshInstallCard()});
+window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;installCard.classList.add("hidden")});
+async function installApp(){
+ if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;refreshInstallCard();return}
+ alert("브라우저 메뉴(⋮ 또는 ≡)에서 ‘홈 화면에 추가’ 또는 ‘앱 설치’를 선택해 주세요. 삼성 인터넷은 ‘현재 페이지 추가 → 홈 화면’을 선택하면 됩니다.");
+}
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=81"));
+refreshInstallCard();
 showApp();
 </script></body></html>
