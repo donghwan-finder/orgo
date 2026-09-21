@@ -39,7 +39,7 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 
 <section id="installCard" class="card hidden">
 <h2>오르GO를 홈 화면에 설치하세요</h2>
-<div class="small">한 번 설치하면 다음부터는 홈 화면의 오르GO 아이콘으로 바로 시작할 수 있습니다.</div>
+<div class="small">설치를 원하면 아래 버튼을 누르세요. 링크로 바로 사용해도 됩니다.</div>
 <div style="height:10px"></div><button id="installBtn" class="primary" onclick="installApp()">📱 오르GO 설치하기</button>
 <div id="installHelp" class="small" style="margin-top:9px"></div>
 </section>
@@ -217,13 +217,13 @@ function refreshInstallCard(){
  if(isInstalled()){installCard.classList.add("hidden");return}
  installCard.classList.remove("hidden");
  if(deferredInstallPrompt){installBtn.textContent="📱 오르GO 설치하기";installHelp.textContent="버튼을 누르면 바로 설치할 수 있습니다."}
- else{installBtn.textContent="📱 홈 화면에 설치하기";installHelp.textContent="설치창이 뜨지 않으면 브라우저 메뉴에서 ‘홈 화면에 추가’ 또는 ‘앱 설치’를 선택해 주세요."}
+ else{installBtn.textContent="📱 오르GO 설치하기";installHelp.textContent="버튼을 누르면 설치 순서를 안내합니다."}
 }
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;refreshInstallCard()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;installCard.classList.add("hidden")});
 async function installApp(){
  if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;refreshInstallCard();return}
- alert("브라우저 메뉴(⋮ 또는 ≡)에서 ‘홈 화면에 추가’ 또는 ‘앱 설치’를 선택해 주세요. 삼성 인터넷은 ‘현재 페이지 추가 → 홈 화면’을 선택하면 됩니다.");
+ alert("오르GO 설치 방법\n\n① 휴대폰 화면 오른쪽 아래 ⋮ 를 누른 뒤 ‘다른 브라우저로 열기’를 누르세요.\n\n② 열린 화면에서 ‘오르GO 설치하기’를 누른 뒤 ‘추가’를 누르세요.\n\n홈 화면에 오르GO가 설치됩니다.");
 }
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=81"));
 refreshInstallCard();
