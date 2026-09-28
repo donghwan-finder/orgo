@@ -247,9 +247,12 @@ function renderWorkout(){
  const tick=()=>{workoutTimer.textContent=fmtDuration(Date.now()-activeWorkout.start);const n=(activeWorkout.laps||[]).length;lapInfo.textContent=n?`현재 ${n}회 기록 · 마지막 +1 ${new Date(activeWorkout.laps[n-1]).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`:"첫 정상에 도착하면 +1을 눌러주세요."};tick();timerHandle=setInterval(tick,1000);
 }
 function toggleHistory(){
- const opening=history.classList.contains("hidden");
- history.classList.toggle("hidden",!opening);
- historyBtn.textContent=opening?"접기":"상세보기";
+ const historyEl=document.getElementById("history");
+ const historyBtnEl=document.getElementById("historyBtn");
+ if(!historyEl||!historyBtnEl)return;
+ const opening=historyEl.classList.contains("hidden");
+ historyEl.classList.toggle("hidden",!opening);
+ historyBtnEl.textContent=opening?"접기":"상세보기";
 }
 function daySessions(){
  const out={};
@@ -273,8 +276,8 @@ function render(){
  totalHeight.textContent=fmt(H,1)+"m";totalSteps.textContent=S.toLocaleString();totalFloors.textContent=F.toLocaleString()+"층";totalRounds.textContent=R+"회";
  const dc=decompose(H);
  mountainCollection.innerHTML=dc.out.length?dc.out.map(x=>`<div class="badge">${art(x.m,true)}<b>${x.m.name} ${x.c}회</b><span>${(x.m.height*x.c).toLocaleString()}m</span></div>`).join(""):`<div class="small" style="grid-column:1/-1">아직 완등한 산이 없습니다.</div>`;
- collectionNote.textContent=dc.out.length?`산으로 환산한 높이 ${fmt(H-dc.left,0)}m · 남은 높이 ${fmt(dc.left,1)}m`:``;
- collectionNote.classList.toggle("hidden",!dc.out.length);
+ collectionNote.textContent="";
+ collectionNote.classList.add("hidden");
  const byDay={};logs.forEach(x=>{const k=dayKey(x.ts);if(!byDay[k])byDay[k]={ts:x.ts,rounds:0,floors:0,steps:0,height:0};const y=byDay[k];y.ts=Math.max(y.ts,x.ts);y.rounds+=+x.rounds||0;y.floors+=x.floors!=null?+x.floors:(+x.rounds||0)*currentFl;y.steps+=+x.steps||0;y.height+=+x.height||0;});
  const sessions=daySessions();
  history.innerHTML=Object.entries(byDay).map(([k,x])=>({k,...x})).sort((a,b)=>b.ts-a.ts).map(x=>{
@@ -282,7 +285,7 @@ function render(){
   const laps=ss&&ss.laps.length?`<div class="small hidden" id="laps-${x.k}" style="padding:7px 0 2px 0">${ss.laps.map((ms,i)=>`${i+1}회차 ${fmtDurationShort(ms)}`).join(" · ")}</div>`:"";
   const click=ss&&ss.laps.length?` onclick="document.getElementById('laps-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`:"";
   return `<div class="history"${click}><div style="width:100%"><b>${x.k.replaceAll("-",".")} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${time}</b>${laps}</div></div>`;
- }).join("")||'<div class="small">아직 기록이 없습니다.</div>';
+ }).join("")||'<div class="small">운동기록이 없습니다.</div>';
 }
 function resetAll(){
  if(!confirm("건물정보와 누적 운동기록을 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다."))return;
