@@ -16,6 +16,7 @@ main{max-width:520px;margin:auto;padding:18px 15px 80px}.brand{font-size:29px;fo
 .card{background:var(--card);border:1px solid var(--line);border-radius:19px;padding:17px;margin:12px 0;box-shadow:0 2px 8px rgba(31,42,36,.035)}
 h2{font-size:18px;margin:0 0 12px}.label{font-size:12px;color:var(--muted);margin:8px 0 5px}
 input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:white}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield;appearance:textfield}
 button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
 .primary{background:var(--green);color:white}.secondary{background:#edf0ed;color:var(--ink)}.ghost{background:white;border:1px solid var(--line)}.danger{background:#fff4f2;color:var(--danger);border:1px solid #efd5d1}
 .row{display:flex;gap:9px}.row>*{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -49,11 +50,11 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <h2>내가 오르는 건물</h2>
 <div class="label">건물 이름</div><input id="building" placeholder="예: 우리 아파트 101동">
 <div class="grid">
-<div><div class="label">시작층</div><div class="floor-choice"><button type="button" id="b1Btn" onclick="selectBasement(1)">B1</button><button type="button" id="b2Btn" onclick="selectBasement(2)">B2</button><button type="button" id="b3Btn" onclick="selectBasement(3)">B3</button></div><input id="startFloor" type="number" min="1" placeholder="지상층 숫자 입력" oninput="clearBasementChoice();buildBasementInputs()"></div>
-<div><div class="label">도착층</div><input id="topFloor" type="number" min="1" placeholder="예: 18" oninput="updateAutoSteps()"></div>
+<div><div class="label">시작층</div><div class="floor-choice"><button type="button" id="b1Btn" onclick="selectBasement(1)">B1</button><button type="button" id="b2Btn" onclick="selectBasement(2)">B2</button><button type="button" id="b3Btn" onclick="selectBasement(3)">B3</button></div><input id="startFloor" type="number" inputmode="numeric" min="1" placeholder="지상층 숫자 입력" oninput="clearBasementChoice();buildBasementInputs()"></div>
+<div><div class="label">도착층</div><input id="topFloor" type="number" inputmode="numeric" min="1" placeholder="예: 18" oninput="updateAutoSteps()"></div>
 </div>
 <div id="basementInputs"></div>
-<div class="label">지상 일반층 한 층당 계단 수</div><input id="normalSteps" type="number" min="1" placeholder="예: 16" oninput="updateAutoSteps()">
+<div class="label">지상 일반층 한 층당 계단 수</div><input id="normalSteps" type="number" inputmode="numeric" min="1" placeholder="예: 16" oninput="updateAutoSteps()">
 <div class="note" style="margin-top:10px"><b>자동 계산 총계단수: <span id="autoSteps">0</span>계단</b><br>예: B1→1층 30계단, 일반층 16계단, 18층 도착이면 30 + (17×16) = 302계단</div>
 <div class="note" style="margin-top:10px"><b>계단 높이는 16cm로 자동 계산합니다.</b><br>처음부터 복잡하게 재지 않아도 바로 시작할 수 있습니다.</div>
 <div style="height:10px"></div><button class="primary" onclick="saveBuilding()">등록하고 시작하기</button>
@@ -91,7 +92,7 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <div class="stat"><div class="label">누적 계단</div><div id="totalSteps" class="num">0</div></div>
 <div class="stat"><div class="label">누적 층수</div><div id="totalFloors" class="num">0층</div></div>
 <div class="stat"><div class="label">총 오른 횟수</div><div id="totalRounds" class="num">0회</div></div>
-</div><div id="history" style="margin-top:12px"></div>
+</div><div style="margin-top:12px"><button id="historyBtn" class="ghost" onclick="toggleHistory()">상세보기</button></div><div id="history" class="hidden" style="margin-top:10px"></div>
 </section>
 
 <section id="rangeCard" class="card hidden">
@@ -158,7 +159,7 @@ function buildBasementInputs(saved){
  if(!n){updateAutoSteps();return}
  for(let level=n;level>=1;level--){
   const to=level===1?"1층":`B${level-1}`;
-  const wrap=document.createElement("div"); wrap.innerHTML=`<div class="label">B${level} → ${to} 계단 수</div><input class="basementStep" type="number" min="1" placeholder="직접 센 계단 수" oninput="updateAutoSteps()">`;
+  const wrap=document.createElement("div"); wrap.innerHTML=`<div class="label">B${level} → ${to} 계단 수</div><input class="basementStep" type="number" inputmode="numeric" min="1" placeholder="직접 센 계단 수" oninput="updateAutoSteps()">`;
   const inp=wrap.querySelector("input"),idx=n-level;
   if(saved&&saved[idx]!=null)inp.value=saved[idx]; else if(prev[idx])inp.value=prev[idx];
   box.appendChild(wrap);
@@ -228,6 +229,7 @@ function changeRound(d){
  renderToday();render();
 }
 function fmtDuration(ms){const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;return h?`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;}
+function fmtDurationShort(ms){const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);if(h)return `${h}시간 ${m}분`;if(m)return `${m}분`;return `${sec}초`;}
 function startWorkout(){
  if(activeWorkout)return alert("이미 운동시간을 기록 중입니다.");
  activeWorkout={start:Date.now(),laps:[]};localStorage.setItem("orgo_active_workout_v083",JSON.stringify(activeWorkout));renderWorkout();
@@ -243,6 +245,16 @@ function renderWorkout(){
  if(!activeWorkout){timerBox.classList.add("hidden");startWorkoutBtn.disabled=false;startWorkoutBtn.textContent="운동 시작";return;}
  timerBox.classList.remove("hidden");startWorkoutBtn.disabled=true;startWorkoutBtn.textContent="운동 중";
  const tick=()=>{workoutTimer.textContent=fmtDuration(Date.now()-activeWorkout.start);const n=(activeWorkout.laps||[]).length;lapInfo.textContent=n?`현재 ${n}회 기록 · 마지막 +1 ${new Date(activeWorkout.laps[n-1]).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`:"첫 정상에 도착하면 +1을 눌러주세요."};tick();timerHandle=setInterval(tick,1000);
+}
+function toggleHistory(){
+ const opening=history.classList.contains("hidden");
+ history.classList.toggle("hidden",!opening);
+ historyBtn.textContent=opening?"접기":"상세보기";
+}
+function daySessions(){
+ const out={};
+ workoutSessions.forEach(s=>{const k=dayKey(s.start);if(!out[k])out[k]={duration:0,laps:[]};out[k].duration+=+s.duration||0;const ls=s.laps||[];let prev=+s.start;ls.forEach(t=>{out[k].laps.push(Math.max(0,(+t)-prev));prev=+t;});});
+ return out;
 }
 function nextMountain(total){for(const m of mountains)if(total<m.height)return m;return mountains[mountains.length-1]}
 function decompose(total){
@@ -264,7 +276,13 @@ function render(){
  collectionNote.textContent=dc.out.length?`산으로 환산한 높이 ${fmt(H-dc.left,0)}m · 남은 높이 ${fmt(dc.left,1)}m`:``;
  collectionNote.classList.toggle("hidden",!dc.out.length);
  const byDay={};logs.forEach(x=>{const k=dayKey(x.ts);if(!byDay[k])byDay[k]={ts:x.ts,rounds:0,floors:0,steps:0,height:0};const y=byDay[k];y.ts=Math.max(y.ts,x.ts);y.rounds+=+x.rounds||0;y.floors+=x.floors!=null?+x.floors:(+x.rounds||0)*currentFl;y.steps+=+x.steps||0;y.height+=+x.height||0;});
- history.innerHTML=Object.values(byDay).sort((a,b)=>b.ts-a.ts).slice(0,8).map(x=>`<div class="history"><div><b>${new Date(x.ts).toLocaleDateString("ko-KR")}</b><div class="small">${x.rounds}회 · ${x.floors}층</div></div><div style="text-align:right"><b>${fmt(x.height,1)}m</b><div class="small">${x.steps.toLocaleString()}계단</div></div></div>`).join("")||'<div class="small">아직 기록이 없습니다.</div>';
+ const sessions=daySessions();
+ history.innerHTML=Object.entries(byDay).map(([k,x])=>({k,...x})).sort((a,b)=>b.ts-a.ts).map(x=>{
+  const ss=sessions[x.k], time=ss&&ss.duration?` / ${fmtDurationShort(ss.duration)}`:"";
+  const laps=ss&&ss.laps.length?`<div class="small hidden" id="laps-${x.k}" style="padding:7px 0 2px 0">${ss.laps.map((ms,i)=>`${i+1}회차 ${fmtDurationShort(ms)}`).join(" · ")}</div>`:"";
+  const click=ss&&ss.laps.length?` onclick="document.getElementById('laps-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`:"";
+  return `<div class="history"${click}><div style="width:100%"><b>${x.k.replaceAll("-",".")} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${time}</b>${laps}</div></div>`;
+ }).join("")||'<div class="small">아직 기록이 없습니다.</div>';
 }
 function resetAll(){
  if(!confirm("건물정보와 누적 운동기록을 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다."))return;
