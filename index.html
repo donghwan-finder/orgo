@@ -34,7 +34,7 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 </style>
 </head>
 <body><main>
-<div class="brand">오르GO <span class="pill">v0.8.1</span></div>
+<div class="brand">오르GO <span class="pill">v0.8.3</span></div>
 <div class="tag">Mountain Beside Home · 집 옆 계단이 나의 산이 된다</div>
 
 <section id="installCard" class="card hidden">
@@ -66,10 +66,10 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 </section>
 
 <section id="climbCard" class="card hidden">
-<h2>오늘 오른 횟수</h2><div class="center"><div class="small">정상에 도착할 때마다 눌러주세요</div>
+<h2>오늘 오른 횟수</h2><div class="center"><div id="todayDate" class="small" style="font-weight:800;margin-bottom:5px"></div><div class="small">정상에 도착할 때마다 눌러주세요</div>
 <div id="roundCount" class="bigcount">0회</div><div id="liveInfo" class="small">0층 · 0계단 · 상승 0m</div></div>
 <div class="row" style="margin-top:12px"><button class="secondary" onclick="changeRound(-1)">−1</button><button class="primary" onclick="changeRound(1)">+1 오르GO</button></div>
-<div style="height:10px"></div><button class="primary" onclick="saveWorkout()">오늘 운동 저장</button>
+<div class="note" style="margin-top:10px"><b>+1을 누르는 즉시 자동 저장됩니다.</b><br>앱을 닫았다 다시 열어도 오늘 오른 횟수와 상승높이가 유지됩니다.</div>
 </section>
 
 <section id="mountainCard" class="card hidden">
@@ -78,13 +78,6 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <div class="center"><div id="mountainName" class="target"></div><div id="mountainHeight" class="small"></div>
 <div class="progress"><div id="bar" class="bar" style="width:0%"></div></div>
 <div id="progressText" class="num"></div><div id="remainText" class="small"></div></div>
-</section>
-
-<section id="rangeCard" class="card hidden">
-<h2>나의 산맥</h2>
-<div class="small">누적 상승고도를 큰 산부터 환산해 보여줍니다.</div>
-<div id="mountainCollection" class="mountain-grid"></div>
-<div id="collectionNote" class="note" style="margin-top:10px"></div>
 </section>
 
 <section id="summaryCard" class="card hidden">
@@ -101,6 +94,13 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <h2>설정</h2><div class="small">전체 초기화는 건물정보와 모든 운동기록을 삭제합니다.</div>
 <div style="height:10px"></div><button class="danger" onclick="resetAll()">전체 초기화</button>
 </section>
+
+<section id="rangeCard" class="card hidden">
+<h2>내가 오른 산</h2>
+<div class="small">지금까지 오른 높이를 산으로 보여줍니다.</div>
+<div id="mountainCollection" class="mountain-grid"></div>
+<div id="collectionNote" class="note" style="margin-top:10px"></div>
+</section>
 </main>
 <script>
 const mountains=[
@@ -115,7 +115,7 @@ const mountains=[
  {name:"에베레스트",height:8848,type:"everest"}
 ];
 let buildingData=JSON.parse(localStorage.getItem("orgo_building_v06")||"null");
-let logs=JSON.parse(localStorage.getItem("orgo_logs_v06")||"[]"),rounds=0;
+let logs=JSON.parse(localStorage.getItem("orgo_logs_v06")||"[]");
 function fmt(n,d=0){return Number(n).toLocaleString("ko-KR",{maximumFractionDigits:d,minimumFractionDigits:d})}
 function floorCount(sf,tf){
  const s=String(sf||"").trim().toUpperCase(), top=Number(tf)||0;
@@ -176,17 +176,39 @@ function showApp(){
  if(!buildingData){setupCard.classList.remove("hidden");return}
  setupCard.classList.add("hidden");[buildingCard,climbCard,mountainCard,rangeCard,summaryCard,resetCard].forEach(x=>x.classList.remove("hidden"));
  buildingName.textContent=buildingData.name;const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
- buildingInfo.textContent=`${buildingData.startFloor} → ${buildingData.topFloor}층 · 1회 ${fl}층 · ${buildingData.steps.toLocaleString()}계단 · 상승 약 ${fmt(one,1)}m`;render();
+ buildingInfo.textContent=`${buildingData.startFloor} → ${buildingData.topFloor}층 · 1회 ${fl}층 · ${buildingData.steps.toLocaleString()}계단 · 상승 약 ${fmt(one,1)}m`;renderToday();render();
+}
+function dayKey(ts){
+ const d=new Date(ts);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function todayLogs(){const k=dayKey(Date.now());return logs.filter(x=>dayKey(x.ts)===k)}
+function todayTotals(){
+ const a=todayLogs();return {
+  rounds:a.reduce((n,x)=>n+(+x.rounds||0),0),
+  steps:a.reduce((n,x)=>n+(+x.steps||0),0),
+  height:a.reduce((n,x)=>n+(+x.height||0),0),
+  floors:a.reduce((n,x)=>n+(x.floors!=null?+x.floors:(+x.rounds||0)*floorCount(buildingData.startFloor,buildingData.topFloor)),0)
+ };
+}
+function renderToday(){
+ const t=todayTotals();
+ todayDate.textContent=new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
+ roundCount.textContent=t.rounds+"회";
+ liveInfo.textContent=`${t.floors.toLocaleString()}층 · ${t.steps.toLocaleString()}계단 · 상승 ${fmt(t.height,1)}m`;
 }
 function changeRound(d){
- rounds=Math.max(0,rounds+d);roundCount.textContent=rounds+"회";const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
- liveInfo.textContent=`${(rounds*fl).toLocaleString()}층 · ${(rounds*buildingData.steps).toLocaleString()}계단 · 상승 ${fmt(rounds*one,1)}m`;
-}
-function saveWorkout(){
- if(rounds<1)return alert("+1 오르GO로 횟수를 기록해 주세요.");
- const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
- logs.push({ts:Date.now(),rounds,steps:rounds*buildingData.steps,height:rounds*one,floors:rounds*fl});
- localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));rounds=0;changeRound(0);mountainCard.classList.add("celebrate");setTimeout(()=>mountainCard.classList.remove("celebrate"),600);render();
+ if(d>0){
+  const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
+  logs.push({ts:Date.now(),rounds:1,steps:buildingData.steps,height:one,floors:fl,instant:true});
+  localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));
+ }else if(d<0){
+  const k=dayKey(Date.now());let idx=-1;
+  for(let i=logs.length-1;i>=0;i--){if(dayKey(logs[i].ts)===k && logs[i].instant){idx=i;break}}
+  if(idx<0)return alert("오늘 +1로 자동 저장한 기록이 없습니다.");
+  if(!confirm("방금 기록한 +1을 취소할까요?"))return;
+  logs.splice(idx,1);localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));
+ }
+ renderToday();render();
 }
 function nextMountain(total){for(const m of mountains)if(total<m.height)return m;return mountains[mountains.length-1]}
 function decompose(total){
@@ -196,16 +218,18 @@ function render(){
  const H=logs.reduce((a,x)=>a+(+x.height||0),0),S=logs.reduce((a,x)=>a+(+x.steps||0),0),R=logs.reduce((a,x)=>a+(+x.rounds||0),0);
  const currentFl=floorCount(buildingData.startFloor,buildingData.topFloor);
  const F=logs.reduce((a,x)=>a+(x.floors!=null?+x.floors:(+x.rounds||0)*currentFl),0);
- const m=nextMountain(H),idx=mountains.indexOf(m),base=idx===0?0:mountains[idx-1].height;
- let p=idx===mountains.length-1&&H>=m.height?100:Math.min(100,Math.max(0,(H-base)/(m.height-base)*100));
+ const m=nextMountain(H);
+ // 산이 바뀌어도 누적 상승고도를 그대로 사용한다. 예: 362.4m / 관악산 632m = 57.3%
+ let p=H>=m.height?100:Math.min(100,Math.max(0,H/m.height*100));
  mountainArt.innerHTML=art(m);mountainName.textContent=m.name;mountainHeight.textContent=`정상 높이 ${m.height.toLocaleString()}m`;
  bar.style.width=p+"%";progressText.textContent=`${p.toFixed(1)}%`;climber.style.left=`calc(${Math.min(88,8+p*.8)}% - 12px)`;
  remainText.textContent=H>=m.height?`에베레스트 높이를 넘어섰습니다!`:`정상까지 ${fmt(m.height-H,1)}m 남았습니다.`;
  totalHeight.textContent=fmt(H,1)+"m";totalSteps.textContent=S.toLocaleString();totalFloors.textContent=F.toLocaleString()+"층";totalRounds.textContent=R+"회";
  const dc=decompose(H);
- mountainCollection.innerHTML=dc.out.length?dc.out.map(x=>`<div class="badge">${art(x.m,true)}<b>${x.m} (${x.c})</b><span>${(x.m.height*x.c).toLocaleString()}m</span></div>`).join(""):`<div class="small" style="grid-column:1/-1">첫 산 남산을 향해 출발!</div>`;
+ mountainCollection.innerHTML=dc.out.length?dc.out.map(x=>`<div class="badge">${art(x.m,true)}<b>${x.m.name} ${x.c}회</b><span>${(x.m.height*x.c).toLocaleString()}m</span></div>`).join(""):`<div class="small" style="grid-column:1/-1">첫 산 남산을 향해 출발!</div>`;
  collectionNote.textContent=dc.out.length?`산으로 환산한 높이 ${fmt(H-dc.left,0)}m · 남은 높이 ${fmt(dc.left,1)}m`:`남산 정상까지 ${fmt(262-H,1)}m 남았습니다.`;
- history.innerHTML=logs.slice().reverse().slice(0,8).map(x=>{const f=x.floors!=null?x.floors:x.rounds*currentFl;return `<div class="history"><div><b>${new Date(x.ts).toLocaleDateString("ko-KR")}</b><div class="small">${x.rounds}회 · ${f}층</div></div><div style="text-align:right"><b>${fmt(x.height,1)}m</b><div class="small">${(+x.steps).toLocaleString()}계단</div></div></div>`}).join("")||'<div class="small">아직 기록이 없습니다.</div>';
+ const byDay={};logs.forEach(x=>{const k=dayKey(x.ts);if(!byDay[k])byDay[k]={ts:x.ts,rounds:0,floors:0,steps:0,height:0};const y=byDay[k];y.ts=Math.max(y.ts,x.ts);y.rounds+=+x.rounds||0;y.floors+=x.floors!=null?+x.floors:(+x.rounds||0)*currentFl;y.steps+=+x.steps||0;y.height+=+x.height||0;});
+ history.innerHTML=Object.values(byDay).sort((a,b)=>b.ts-a.ts).slice(0,8).map(x=>`<div class="history"><div><b>${new Date(x.ts).toLocaleDateString("ko-KR")}</b><div class="small">${x.rounds}회 · ${x.floors}층</div></div><div style="text-align:right"><b>${fmt(x.height,1)}m</b><div class="small">${x.steps.toLocaleString()}계단</div></div></div>`).join("")||'<div class="small">아직 기록이 없습니다.</div>';
 }
 function resetAll(){
  if(!confirm("건물정보와 누적 운동기록을 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다."))return;
@@ -225,7 +249,7 @@ async function installApp(){
  if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;refreshInstallCard();return}
  alert("오르GO 설치 방법\n\n① 휴대폰 화면 오른쪽 아래 ⋮ 를 누른 뒤 ‘다른 브라우저로 열기’를 누르세요.\n\n② 열린 화면에서 ‘오르GO 설치하기’를 누른 뒤 ‘추가’를 누르세요.\n\n홈 화면에 오르GO가 설치됩니다.");
 }
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=81"));
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=83"));
 refreshInstallCard();
 showApp();
 </script></body></html>
