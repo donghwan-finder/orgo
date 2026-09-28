@@ -280,7 +280,8 @@ function render(){
  collectionNote.classList.add("hidden");
  const byDay={};logs.forEach(x=>{const k=dayKey(x.ts);if(!byDay[k])byDay[k]={ts:x.ts,rounds:0,floors:0,steps:0,height:0};const y=byDay[k];y.ts=Math.max(y.ts,x.ts);y.rounds+=+x.rounds||0;y.floors+=x.floors!=null?+x.floors:(+x.rounds||0)*currentFl;y.steps+=+x.steps||0;y.height+=+x.height||0;});
  const sessions=daySessions();
- history.innerHTML=Object.entries(byDay).map(([k,x])=>({k,...x})).sort((a,b)=>b.ts-a.ts).map(x=>{
+ const historyListEl=document.getElementById("history");
+ if(historyListEl) historyListEl.innerHTML=Object.entries(byDay).map(([k,x])=>({k,...x})).sort((a,b)=>b.ts-a.ts).map(x=>{
   const ss=sessions[x.k], time=ss&&ss.duration?` / ${fmtDurationShort(ss.duration)}`:"";
   const laps=ss&&ss.laps.length?`<div class="small hidden" id="laps-${x.k}" style="padding:7px 0 2px 0">${ss.laps.map((ms,i)=>`${i+1}회차 ${fmtDurationShort(ms)}`).join(" · ")}</div>`:"";
   const click=ss&&ss.laps.length?` onclick="document.getElementById('laps-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`:"";
