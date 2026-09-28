@@ -31,6 +31,7 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 .badge svg{width:100%;height:56px}.badge b{display:block;font-size:12px}.badge span{font-size:11px;color:var(--muted)}
 .celebrate{animation:pop .55s ease}@keyframes pop{0%{transform:scale(.96)}55%{transform:scale(1.035)}100%{transform:scale(1)}}
 .note{padding:10px 12px;border-radius:12px;background:#fff8e9;font-size:12px;line-height:1.5;color:#6f5a2f}
+.floor-choice{display:flex;gap:7px;margin-bottom:8px}.floor-choice button{padding:10px 6px;background:#edf0ed;color:var(--ink)}.floor-choice button.active{background:var(--green);color:white}.timerbox{margin-top:12px;padding:12px;border-radius:13px;background:#f4f7f4;text-align:center}.timer{font-size:25px;font-weight:900;margin:4px 0}
 </style>
 </head>
 <body><main>
@@ -48,7 +49,7 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <h2>내가 오르는 건물</h2>
 <div class="label">건물 이름</div><input id="building" placeholder="예: 우리 아파트 101동">
 <div class="grid">
-<div><div class="label">시작층</div><input id="startFloor" placeholder="예: B1 또는 1" oninput="buildBasementInputs()"></div>
+<div><div class="label">시작층</div><div class="floor-choice"><button type="button" id="b1Btn" onclick="selectBasement(1)">B1</button><button type="button" id="b2Btn" onclick="selectBasement(2)">B2</button><button type="button" id="b3Btn" onclick="selectBasement(3)">B3</button></div><input id="startFloor" type="number" min="1" placeholder="지상층 숫자 입력" oninput="clearBasementChoice();buildBasementInputs()"></div>
 <div><div class="label">도착층</div><input id="topFloor" type="number" min="1" placeholder="예: 18" oninput="updateAutoSteps()"></div>
 </div>
 <div id="basementInputs"></div>
@@ -68,7 +69,10 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <section id="climbCard" class="card hidden">
 <h2>오늘 오른 횟수</h2><div class="center"><div id="todayDate" class="small" style="font-weight:800;margin-bottom:5px"></div><div class="small">정상에 도착할 때마다 눌러주세요</div>
 <div id="roundCount" class="bigcount">0회</div><div id="liveInfo" class="small">0층 · 0계단 · 상승 0m</div></div>
-<div class="row" style="margin-top:12px"><button class="secondary" onclick="changeRound(-1)">−1</button><button class="primary" onclick="changeRound(1)">+1 오르GO</button></div>
+<div style="margin-top:12px"><button id="startWorkoutBtn" class="ghost" onclick="startWorkout()">운동 시작</button></div>
+<div class="row" style="margin-top:9px"><button class="secondary" onclick="changeRound(-1)">−1 수정</button><button class="primary" onclick="changeRound(1)">+1 오르GO</button></div>
+<div id="timerBox" class="timerbox hidden"><div class="small">운동시간</div><div id="workoutTimer" class="timer">00:00</div><div id="lapInfo" class="small"></div></div>
+<div style="margin-top:9px"><button id="endWorkoutBtn" class="secondary" onclick="endWorkout()">운동 종료</button></div>
 <div class="note" style="margin-top:10px"><b>+1을 누르는 즉시 자동 저장됩니다.</b><br>앱을 닫았다 다시 열어도 오늘 오른 횟수와 상승높이가 유지됩니다.</div>
 </section>
 
@@ -90,16 +94,16 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 </div><div id="history" style="margin-top:12px"></div>
 </section>
 
-<section id="resetCard" class="card hidden">
-<h2>설정</h2><div class="small">전체 초기화는 건물정보와 모든 운동기록을 삭제합니다.</div>
-<div style="height:10px"></div><button class="danger" onclick="resetAll()">전체 초기화</button>
-</section>
-
 <section id="rangeCard" class="card hidden">
 <h2>내가 오른 산</h2>
 <div class="small">지금까지 오른 높이를 산으로 보여줍니다.</div>
 <div id="mountainCollection" class="mountain-grid"></div>
 <div id="collectionNote" class="note" style="margin-top:10px"></div>
+</section>
+
+<section id="resetCard" class="card hidden">
+<h2>설정</h2><div class="small">전체 초기화는 건물정보와 모든 운동기록을 삭제합니다.</div>
+<div style="height:10px"></div><button class="danger" onclick="resetAll()">전체 초기화</button>
 </section>
 </main>
 <script>
@@ -116,6 +120,9 @@ const mountains=[
 ];
 let buildingData=JSON.parse(localStorage.getItem("orgo_building_v06")||"null");
 let logs=JSON.parse(localStorage.getItem("orgo_logs_v06")||"[]");
+let workoutSessions=JSON.parse(localStorage.getItem("orgo_workout_sessions_v083")||"[]");
+let activeWorkout=JSON.parse(localStorage.getItem("orgo_active_workout_v083")||"null");
+let timerHandle=null;
 function fmt(n,d=0){return Number(n).toLocaleString("ko-KR",{maximumFractionDigits:d,minimumFractionDigits:d})}
 function floorCount(sf,tf){
  const s=String(sf||"").trim().toUpperCase(), top=Number(tf)||0;
@@ -135,8 +142,17 @@ function art(m,mini=false){
           "M5 82 L28 62 L50 28 L72 62 L95 82 Z";
  return `<svg viewBox="0 0 100 90" aria-label="${m.name} 일러스트"><path d="${path}" fill="#5d8268"/><path d="M5 82 Q50 72 95 82 L95 90 L5 90Z" fill="#b8cda9"/>${extra}</svg>`;
 }
+function selectBasement(n){
+ startFloor.value=""; startFloor.dataset.basement=String(n);
+ [1,2,3].forEach(i=>document.getElementById(`b${i}Btn`).classList.toggle("active",i===n));
+ buildBasementInputs();
+}
+function clearBasementChoice(){
+ delete startFloor.dataset.basement;[1,2,3].forEach(i=>document.getElementById(`b${i}Btn`).classList.remove("active"));
+}
+function selectedStartFloor(){const b=Number(startFloor.dataset.basement||0);return b?`B${b}`:String(startFloor.value||"").trim();}
 function buildBasementInputs(saved){
- const raw=String(startFloor.value||"").trim().toUpperCase(), bm=raw.match(/^B(\d+)$/);
+ const raw=selectedStartFloor().toUpperCase(), bm=raw.match(/^B(\d+)$/);
  const n=bm?Math.max(0,Math.min(20,Number(bm[1])||0)):0,box=document.getElementById("basementInputs");
  const prev=[...box.querySelectorAll("input")].map(x=>x.value); box.innerHTML="";
  if(!n){updateAutoSteps();return}
@@ -155,7 +171,7 @@ function calcAutoSteps(){
 }
 function updateAutoSteps(){const el=document.getElementById("autoSteps");if(el)el.textContent=calcAutoSteps().toLocaleString("ko-KR")}
 function saveBuilding(){
- const name=building.value.trim(),sf=String(startFloor.value||"").trim().toUpperCase(),bm=sf.match(/^B(\d+)$/),b=bm?+bm[1]:0,tf=+topFloor.value,ns=+normalSteps.value,sh=16;
+ const name=building.value.trim(),sf=selectedStartFloor().toUpperCase(),bm=sf.match(/^B(\d+)$/),b=bm?+bm[1]:0,tf=+topFloor.value,ns=+normalSteps.value,sh=16;
  const bs=[...document.querySelectorAll(".basementStep")].map(x=>+x.value);
  const st=calcAutoSteps();
  if(!name||!sf||!tf||!ns||bs.length!==b||bs.some(x=>!x))return alert("건물 이름, 시작층, 도착층과 필요한 계단 수를 입력해 주세요.");
@@ -166,8 +182,8 @@ function saveBuilding(){
 }
 function editBuilding(){
  setupCard.classList.remove("hidden");building.value=buildingData.name;topFloor.value=buildingData.topFloor||"";
- startFloor.value=buildingData.startFloor||"B1";
- const bm=String(buildingData.startFloor||"B1").toUpperCase().match(/^B(\d+)$/);
+ const savedStart=String(buildingData.startFloor||"1").toUpperCase(),bm=savedStart.match(/^B(\d+)$/);
+ clearBasementChoice(); if(bm&&Number(bm[1])<=3){selectBasement(Number(bm[1]));}else{startFloor.value=bm?"":savedStart;}
  normalSteps.value=buildingData.normalSteps||"";buildBasementInputs(buildingData.basementSteps||[]);updateAutoSteps();
  if(!buildingData.autoCalculated)document.getElementById("autoSteps").textContent=`기존 ${Number(buildingData.steps||0).toLocaleString("ko-KR")} (새 방식으로 수정 시 자동계산)`;
  window.scrollTo({top:0,behavior:"smooth"});
@@ -176,7 +192,7 @@ function showApp(){
  if(!buildingData){setupCard.classList.remove("hidden");return}
  setupCard.classList.add("hidden");[buildingCard,climbCard,mountainCard,rangeCard,summaryCard,resetCard].forEach(x=>x.classList.remove("hidden"));
  buildingName.textContent=buildingData.name;const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
- buildingInfo.textContent=`${buildingData.startFloor} → ${buildingData.topFloor}층 · 1회 ${fl}층 · ${buildingData.steps.toLocaleString()}계단 · 상승 약 ${fmt(one,1)}m`;renderToday();render();
+ buildingInfo.textContent=`${buildingData.startFloor} → ${buildingData.topFloor}층 · 1회 ${fl}층 · ${buildingData.steps.toLocaleString()}계단 · 상승 약 ${fmt(one,1)}m`;renderToday();renderWorkout();render();
 }
 function dayKey(ts){
  const d=new Date(ts);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -199,8 +215,9 @@ function renderToday(){
 function changeRound(d){
  if(d>0){
   const one=buildingData.steps*(buildingData.stepHeight/100),fl=floorCount(buildingData.startFloor,buildingData.topFloor);
-  logs.push({ts:Date.now(),rounds:1,steps:buildingData.steps,height:one,floors:fl,instant:true});
+  const now=Date.now();logs.push({ts:now,rounds:1,steps:buildingData.steps,height:one,floors:fl,instant:true});
   localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));
+  if(activeWorkout){activeWorkout.laps=activeWorkout.laps||[];activeWorkout.laps.push(now);localStorage.setItem("orgo_active_workout_v083",JSON.stringify(activeWorkout));renderWorkout();}
  }else if(d<0){
   const k=dayKey(Date.now());let idx=-1;
   for(let i=logs.length-1;i>=0;i--){if(dayKey(logs[i].ts)===k && logs[i].instant){idx=i;break}}
@@ -209,6 +226,23 @@ function changeRound(d){
   logs.splice(idx,1);localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));
  }
  renderToday();render();
+}
+function fmtDuration(ms){const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;return h?`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;}
+function startWorkout(){
+ if(activeWorkout)return alert("이미 운동시간을 기록 중입니다.");
+ activeWorkout={start:Date.now(),laps:[]};localStorage.setItem("orgo_active_workout_v083",JSON.stringify(activeWorkout));renderWorkout();
+}
+function endWorkout(){
+ if(!activeWorkout)return alert("먼저 운동 시작을 눌러주세요.");
+ const end=Date.now(),session={start:activeWorkout.start,end,duration:end-activeWorkout.start,laps:activeWorkout.laps||[]};
+ workoutSessions.push(session);localStorage.setItem("orgo_workout_sessions_v083",JSON.stringify(workoutSessions));
+ localStorage.removeItem("orgo_active_workout_v083");activeWorkout=null;renderWorkout();alert(`오늘 운동을 종료했습니다.\n총 운동시간 ${fmtDuration(session.duration)}\n오른 횟수 ${session.laps.length}회`);
+}
+function renderWorkout(){
+ if(timerHandle){clearInterval(timerHandle);timerHandle=null;}
+ if(!activeWorkout){timerBox.classList.add("hidden");startWorkoutBtn.disabled=false;startWorkoutBtn.textContent="운동 시작";return;}
+ timerBox.classList.remove("hidden");startWorkoutBtn.disabled=true;startWorkoutBtn.textContent="운동 중";
+ const tick=()=>{workoutTimer.textContent=fmtDuration(Date.now()-activeWorkout.start);const n=(activeWorkout.laps||[]).length;lapInfo.textContent=n?`현재 ${n}회 기록 · 마지막 +1 ${new Date(activeWorkout.laps[n-1]).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`:"첫 정상에 도착하면 +1을 눌러주세요."};tick();timerHandle=setInterval(tick,1000);
 }
 function nextMountain(total){for(const m of mountains)if(total<m.height)return m;return mountains[mountains.length-1]}
 function decompose(total){
@@ -226,14 +260,15 @@ function render(){
  remainText.textContent=H>=m.height?`에베레스트 높이를 넘어섰습니다!`:`정상까지 ${fmt(m.height-H,1)}m 남았습니다.`;
  totalHeight.textContent=fmt(H,1)+"m";totalSteps.textContent=S.toLocaleString();totalFloors.textContent=F.toLocaleString()+"층";totalRounds.textContent=R+"회";
  const dc=decompose(H);
- mountainCollection.innerHTML=dc.out.length?dc.out.map(x=>`<div class="badge">${art(x.m,true)}<b>${x.m.name} ${x.c}회</b><span>${(x.m.height*x.c).toLocaleString()}m</span></div>`).join(""):`<div class="small" style="grid-column:1/-1">첫 산 남산을 향해 출발!</div>`;
- collectionNote.textContent=dc.out.length?`산으로 환산한 높이 ${fmt(H-dc.left,0)}m · 남은 높이 ${fmt(dc.left,1)}m`:`남산 정상까지 ${fmt(262-H,1)}m 남았습니다.`;
+ mountainCollection.innerHTML=dc.out.length?dc.out.map(x=>`<div class="badge">${art(x.m,true)}<b>${x.m.name} ${x.c}회</b><span>${(x.m.height*x.c).toLocaleString()}m</span></div>`).join(""):`<div class="small" style="grid-column:1/-1">아직 완등한 산이 없습니다.</div>`;
+ collectionNote.textContent=dc.out.length?`산으로 환산한 높이 ${fmt(H-dc.left,0)}m · 남은 높이 ${fmt(dc.left,1)}m`:``;
+ collectionNote.classList.toggle("hidden",!dc.out.length);
  const byDay={};logs.forEach(x=>{const k=dayKey(x.ts);if(!byDay[k])byDay[k]={ts:x.ts,rounds:0,floors:0,steps:0,height:0};const y=byDay[k];y.ts=Math.max(y.ts,x.ts);y.rounds+=+x.rounds||0;y.floors+=x.floors!=null?+x.floors:(+x.rounds||0)*currentFl;y.steps+=+x.steps||0;y.height+=+x.height||0;});
  history.innerHTML=Object.values(byDay).sort((a,b)=>b.ts-a.ts).slice(0,8).map(x=>`<div class="history"><div><b>${new Date(x.ts).toLocaleDateString("ko-KR")}</b><div class="small">${x.rounds}회 · ${x.floors}층</div></div><div style="text-align:right"><b>${fmt(x.height,1)}m</b><div class="small">${x.steps.toLocaleString()}계단</div></div></div>`).join("")||'<div class="small">아직 기록이 없습니다.</div>';
 }
 function resetAll(){
  if(!confirm("건물정보와 누적 운동기록을 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다."))return;
- localStorage.removeItem("orgo_building_v06");localStorage.removeItem("orgo_logs_v06");location.reload();
+ localStorage.removeItem("orgo_building_v06");localStorage.removeItem("orgo_logs_v06");localStorage.removeItem("orgo_workout_sessions_v083");localStorage.removeItem("orgo_active_workout_v083");location.reload();
 }
 let deferredInstallPrompt=null;
 function isInstalled(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
