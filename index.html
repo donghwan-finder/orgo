@@ -18,7 +18,7 @@ h2{font-size:18px;margin:0 0 12px}.label{font-size:12px;color:var(--muted);margi
 input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:white}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield;appearance:textfield}
 button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
-.primary{background:var(--green);color:white}.secondary{background:#edf0ed;color:var(--ink)}.ghost{background:white;border:1px solid var(--line)}.danger{background:#fff4f2;color:var(--danger);border:1px solid #efd5d1}
+.primary{background:var(--green);color:white}.secondary{background:#edf0ed;color:var(--ink)}.ghost{background:white;border:1px solid var(--line)}.danger{background:#fff4f2;color:var(--danger);border:1px solid #efd5d1}.workout-start-active{background:var(--green);color:white;border:1px solid var(--green)}.workout-end-active{background:var(--orange);color:white;border:1px solid var(--orange)}button:disabled{background:#e5e7e5!important;color:#9aa09c!important;border:1px solid #d9dcda!important;cursor:default;opacity:1}
 .row{display:flex;gap:9px}.row>*{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .stat{background:#faf9f5;border-radius:13px;padding:13px}.num{font-size:21px;font-weight:900}.bigcount{text-align:center;font-size:58px;font-weight:900;margin:7px 0}
 .center{text-align:center}.small{font-size:12px;color:var(--muted);line-height:1.5}.hidden{display:none}
@@ -71,10 +71,10 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <section id="climbCard" class="card hidden">
 <h2>오늘 오른 횟수</h2><div class="center"><div id="todayDate" class="small" style="font-weight:800;margin-bottom:5px"></div><div class="small">정상에 도착할 때마다 눌러주세요</div>
 <div id="roundCount" class="bigcount">0회</div><div id="liveInfo" class="small">0층 · 0계단 · 상승 0m</div></div>
-<div style="margin-top:12px"><button id="startWorkoutBtn" class="ghost" onclick="startWorkout()">운동 시작</button></div>
+<div style="margin-top:12px"><button id="startWorkoutBtn" class="workout-start-active" onclick="startWorkout()">운동 시작</button></div>
 <div class="row" style="margin-top:9px"><button class="secondary" onclick="changeRound(-1)">−1 수정</button><button class="primary" onclick="changeRound(1)">+1 오르GO</button></div>
 <div id="timerBox" class="timerbox hidden"><div class="small">운동시간</div><div id="workoutTimer" class="timer">00:00</div><div id="lapInfo" class="small"></div></div>
-<div style="margin-top:9px"><button id="endWorkoutBtn" class="secondary" onclick="endWorkout()">운동 종료</button></div>
+<div style="margin-top:9px"><button id="endWorkoutBtn" class="secondary" onclick="endWorkout()" disabled>운동 종료</button></div>
 <div class="note" style="margin-top:10px"><b>+1을 누르는 즉시 자동 저장됩니다.</b><br>앱을 닫았다 다시 열어도 오늘 오른 횟수와 상승높이가 유지됩니다.</div>
 </section>
 
@@ -93,7 +93,7 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <div class="stat"><div class="label">누적 계단</div><div id="totalSteps" class="num">0</div></div>
 <div class="stat"><div class="label">누적 층수</div><div id="totalFloors" class="num">0층</div></div>
 <div class="stat"><div class="label">총 오른 횟수</div><div id="totalRounds" class="num">0회</div></div>
-</div><div style="margin-top:12px"><button id="historyBtn" class="ghost" onclick="toggleHistory()">상세보기</button></div><div id="history" class="hidden" style="margin-top:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="small">기간</span><select id="historyPeriod" onchange="render()" style="max-width:160px"><option value="thisMonth">이번 달</option><option value="lastMonth">지난달</option><option value="threeMonths">최근 3개월</option><option value="all">전체</option></select></div><div id="historyList"></div></div>
+</div><div style="margin-top:12px"><button id="historyBtn" class="ghost" onclick="toggleHistory()">상세보기</button></div><div id="history" class="hidden" style="margin-top:10px"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px"><div><b id="historyPeriodLabel"></b><span id="historyPeriodSummary" class="small" style="margin-left:8px"></span></div><select id="historyPeriod" onchange="render()" style="max-width:150px"><option value="thisMonth">기간 선택</option><option value="lastMonth">지난달</option><option value="threeMonths">최근 3개월</option><option value="all">전체</option></select></div><div id="historyList"></div></div>
 </section>
 
 <section id="rangeCard" class="card hidden">
@@ -246,12 +246,19 @@ function endWorkout(){
  if(!activeWorkout)return alert("먼저 운동 시작을 눌러주세요.");
  const end=Date.now(),session={start:activeWorkout.start,end,duration:end-activeWorkout.start,laps:activeWorkout.laps||[]};
  workoutSessions.push(session);localStorage.setItem("orgo_workout_sessions_v083",JSON.stringify(workoutSessions));
- localStorage.removeItem("orgo_active_workout_v083");activeWorkout=null;renderWorkout();alert(`오늘 운동을 종료했습니다.\n총 운동시간 ${fmtDuration(session.duration)}\n오른 횟수 ${session.laps.length}회`);
+ localStorage.removeItem("orgo_active_workout_v083");activeWorkout=null;renderWorkout();render();alert(`오늘 운동을 종료했습니다.\n총 운동시간 ${fmtDuration(session.duration)}\n오른 횟수 ${session.laps.length}회`);
 }
 function renderWorkout(){
  if(timerHandle){clearInterval(timerHandle);timerHandle=null;}
- if(!activeWorkout){timerBox.classList.add("hidden");startWorkoutBtn.disabled=false;startWorkoutBtn.textContent="운동 시작";return;}
- timerBox.classList.remove("hidden");startWorkoutBtn.disabled=true;startWorkoutBtn.textContent="운동 중";
+ if(!activeWorkout){
+  timerBox.classList.add("hidden");
+  startWorkoutBtn.disabled=false;startWorkoutBtn.textContent="운동 시작";startWorkoutBtn.className="workout-start-active";
+  endWorkoutBtn.disabled=true;endWorkoutBtn.className="secondary";
+  return;
+ }
+ timerBox.classList.remove("hidden");
+ startWorkoutBtn.disabled=true;startWorkoutBtn.textContent="운동 중";startWorkoutBtn.className="secondary";
+ endWorkoutBtn.disabled=false;endWorkoutBtn.className="workout-end-active";
  const tick=()=>{workoutTimer.textContent=fmtDuration(Date.now()-activeWorkout.start);const n=(activeWorkout.laps||[]).length;lapInfo.textContent=n?`현재 ${n}회 기록 · 마지막 +1 ${new Date(activeWorkout.laps[n-1]).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`:"첫 정상에 도착하면 +1을 눌러주세요."};tick();timerHandle=setInterval(tick,1000);
 }
 function toggleHistory(){
@@ -298,6 +305,16 @@ function render(){
  else if(period==="lastMonth"){rangeStart=monthStart(now.getFullYear(),now.getMonth()-1);rangeEnd=monthStart(now.getFullYear(),now.getMonth());}
  else if(period==="threeMonths"){rangeStart=monthStart(now.getFullYear(),now.getMonth()-2);rangeEnd=monthStart(now.getFullYear(),now.getMonth()+1);}
  const visibleDays=Object.entries(byDay).map(([k,x])=>({k,...x})).filter(x=>x.ts>=rangeStart&&x.ts<rangeEnd);
+ const periodLabelEl=document.getElementById("historyPeriodLabel");
+ const periodSummaryEl=document.getElementById("historyPeriodSummary");
+ let periodLabel=`${now.getFullYear()}년 ${now.getMonth()+1}월`;
+ if(period==="lastMonth"){const d=new Date(now.getFullYear(),now.getMonth()-1,1);periodLabel=`${d.getFullYear()}년 ${d.getMonth()+1}월`;}
+ else if(period==="threeMonths") periodLabel="최근 3개월";
+ else if(period==="all") periodLabel="전체 기록";
+ const ps=visibleDays.reduce((a,x)=>{a.rounds+=x.rounds;a.steps+=x.steps;a.height+=x.height;return a;},{rounds:0,steps:0,height:0});
+ const periodTimedMs=workoutSessions.reduce((sum,s)=>{const t=+s.start||0;return (t>=rangeStart&&t<rangeEnd)?sum+(+s.duration||0):sum;},0);
+ if(periodLabelEl)periodLabelEl.textContent=periodLabel;
+ if(periodSummaryEl)periodSummaryEl.textContent=`총 ${ps.rounds}회 · ${ps.steps.toLocaleString()}계단 · 상승 ${fmt(ps.height,1)}m${periodTimedMs?` · 운동시간 ${fmtDurationShort(periodTimedMs)}`:""}`;
  if(historyListEl) historyListEl.innerHTML=visibleDays.sort((a,b)=>b.ts-a.ts).map(x=>{
   const ss=sessionsByDay[x.k]||[];
   const timedSessions=ss.filter(s=>(+s.duration||0)>0);
@@ -327,7 +344,7 @@ async function installApp(){
  if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;refreshInstallCard();return}
  alert("오르GO 설치 방법\n\n① 휴대폰 화면 오른쪽 아래 ⋮ 를 누른 뒤 ‘다른 브라우저로 열기’를 누르세요.\n\n② 열린 화면에서 ‘오르GO 설치하기’를 누른 뒤 ‘추가’를 누르세요.\n\n홈 화면에 오르GO가 설치됩니다.");
 }
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=83"));
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=83c"));
 refreshInstallCard();
 showApp();
 </script></body></html>
