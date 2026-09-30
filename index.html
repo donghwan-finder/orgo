@@ -93,7 +93,7 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 <div class="stat"><div class="label">누적 계단</div><div id="totalSteps" class="num">0</div></div>
 <div class="stat"><div class="label">누적 층수</div><div id="totalFloors" class="num">0층</div></div>
 <div class="stat"><div class="label">총 오른 횟수</div><div id="totalRounds" class="num">0회</div></div>
-</div><div style="margin-top:12px"><button id="historyBtn" class="ghost" onclick="toggleHistory()">상세보기</button></div><div id="history" class="hidden" style="margin-top:10px"></div>
+</div><div style="margin-top:12px"><button id="historyBtn" class="ghost" onclick="toggleHistory()">상세보기</button></div><div id="history" class="hidden" style="margin-top:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="small">기간</span><select id="historyPeriod" onchange="render()" style="max-width:160px"><option value="thisMonth">이번 달</option><option value="lastMonth">지난달</option><option value="threeMonths">최근 3개월</option><option value="all">전체</option></select></div><div id="historyList"></div></div>
 </section>
 
 <section id="rangeCard" class="card hidden">
@@ -288,12 +288,25 @@ function render(){
  collectionNote.classList.add("hidden");
  const byDay={};logs.forEach(x=>{const k=dayKey(x.ts);if(!byDay[k])byDay[k]={ts:x.ts,rounds:0,floors:0,steps:0,height:0};const y=byDay[k];y.ts=Math.max(y.ts,x.ts);y.rounds+=+x.rounds||0;y.floors+=x.floors!=null?+x.floors:(+x.rounds||0)*currentFl;y.steps+=+x.steps||0;y.height+=+x.height||0;});
  const sessionsByDay={};workoutSessions.forEach((s,si)=>{const k=dayKey(s.start);(sessionsByDay[k]??=[]).push({...s,si});});
- const historyListEl=document.getElementById("history");
- if(historyListEl) historyListEl.innerHTML=Object.entries(byDay).map(([k,x])=>({k,...x})).sort((a,b)=>b.ts-a.ts).map(x=>{
+ const historyListEl=document.getElementById("historyList");
+ const periodEl=document.getElementById("historyPeriod");
+ const period=periodEl?periodEl.value:"thisMonth";
+ const now=new Date();
+ const monthStart=(y,m)=>new Date(y,m,1).getTime();
+ let rangeStart=-Infinity,rangeEnd=Infinity;
+ if(period==="thisMonth"){rangeStart=monthStart(now.getFullYear(),now.getMonth());rangeEnd=monthStart(now.getFullYear(),now.getMonth()+1);}
+ else if(period==="lastMonth"){rangeStart=monthStart(now.getFullYear(),now.getMonth()-1);rangeEnd=monthStart(now.getFullYear(),now.getMonth());}
+ else if(period==="threeMonths"){rangeStart=monthStart(now.getFullYear(),now.getMonth()-2);rangeEnd=monthStart(now.getFullYear(),now.getMonth()+1);}
+ const visibleDays=Object.entries(byDay).map(([k,x])=>({k,...x})).filter(x=>x.ts>=rangeStart&&x.ts<rangeEnd);
+ if(historyListEl) historyListEl.innerHTML=visibleDays.sort((a,b)=>b.ts-a.ts).map(x=>{
   const ss=sessionsByDay[x.k]||[];
+  const timedSessions=ss.filter(s=>(+s.duration||0)>0);
+  const timedMs=timedSessions.reduce((n,s)=>n+(+s.duration||0),0);
+  const timedLaps=timedSessions.reduce((n,s)=>n+(s.laps||[]).length,0);
+  const timeSummary=timedSessions.length?` / 운동시간 ${fmtDurationShort(timedMs)}`:"";
   const timed=ss.length?`<div class="small hidden" id="sessions-${x.k}" style="padding:7px 0 2px 0">${ss.map((s,i)=>{const n=(s.laps||[]).length;return `운동 ${i+1} · ${fmtDurationShort(s.duration||0)}${n?` · +${n}회`:""}`}).join("<br>")}</div>`:"";
   const click=ss.length?` onclick="document.getElementById('sessions-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`:"";
-  return `<div class="history"${click}><div style="width:100%"><b>${x.k.replaceAll("-",".")} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m</b>${timed}</div></div>`;
+  return `<div class="history"${click}><div style="width:100%"><b>${x.k.replaceAll("-",".")} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${timeSummary}</b>${timed}</div></div>`;
  }).join("")||'<div class="small">운동기록이 없습니다.</div>';
 }
 function resetAll(){
