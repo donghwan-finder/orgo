@@ -237,7 +237,7 @@ function changeRound(d){
  renderToday();render();
 }
 function fmtDuration(ms){const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;return h?`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;}
-function fmtDurationShort(ms){const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);if(h)return `${h}시간 ${m}분`;if(m)return `${m}분`;return `${sec}초`;}
+function fmtDurationShort(ms){const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),ss=sec%60;if(h)return `${h}시간 ${m}분${ss?` ${ss}초`:""}`;if(m)return `${m}분${ss?` ${ss}초`:""}`;return `${ss}초`;}
 function startWorkout(){
  if(activeWorkout)return alert("이미 운동시간을 기록 중입니다.");
  activeWorkout={start:Date.now(),laps:[]};localStorage.setItem("orgo_active_workout_v083",JSON.stringify(activeWorkout));renderWorkout();
@@ -245,8 +245,10 @@ function startWorkout(){
 function endWorkout(){
  if(!activeWorkout)return alert("먼저 운동 시작을 눌러주세요.");
  const end=Date.now(),session={start:activeWorkout.start,end,duration:end-activeWorkout.start,laps:activeWorkout.laps||[]};
- workoutSessions.push(session);localStorage.setItem("orgo_workout_sessions_v083",JSON.stringify(workoutSessions));
- localStorage.removeItem("orgo_active_workout_v083");activeWorkout=null;renderWorkout();render();alert(`오늘 운동을 종료했습니다.\n총 운동시간 ${fmtDuration(session.duration)}\n오른 횟수 ${session.laps.length}회`);
+ const hasClimb=session.laps.length>0;
+ if(hasClimb){workoutSessions.push(session);localStorage.setItem("orgo_workout_sessions_v083",JSON.stringify(workoutSessions));}
+ localStorage.removeItem("orgo_active_workout_v083");activeWorkout=null;renderWorkout();render();
+ alert(hasClimb?`오늘 운동을 종료했습니다.\n총 운동시간 ${fmtDuration(session.duration)}\n오른 횟수 ${session.laps.length}회`:`운동을 종료했습니다.\n+1 기록이 없어 운동시간에는 포함하지 않습니다.`);
 }
 function renderWorkout(){
  if(timerHandle){clearInterval(timerHandle);timerHandle=null;}
@@ -312,18 +314,20 @@ function render(){
  else if(period==="threeMonths") periodLabel="최근 3개월";
  else if(period==="all") periodLabel="전체 기록";
  const ps=visibleDays.reduce((a,x)=>{a.rounds+=x.rounds;a.steps+=x.steps;a.height+=x.height;return a;},{rounds:0,steps:0,height:0});
- const periodTimedMs=workoutSessions.reduce((sum,s)=>{const t=+s.start||0;return (t>=rangeStart&&t<rangeEnd)?sum+(+s.duration||0):sum;},0);
+ const periodTimedMs=workoutSessions.reduce((sum,s)=>{const t=+s.start||0,hasClimb=(s.laps||[]).length>0;return (hasClimb&&t>=rangeStart&&t<rangeEnd)?sum+(+s.duration||0):sum;},0);
  if(periodLabelEl)periodLabelEl.textContent=periodLabel;
  if(periodSummaryEl)periodSummaryEl.textContent=`총 ${ps.rounds}회 · ${ps.steps.toLocaleString()}계단 · 상승 ${fmt(ps.height,1)}m${periodTimedMs?` · 운동시간 ${fmtDurationShort(periodTimedMs)}`:""}`;
  if(historyListEl) historyListEl.innerHTML=visibleDays.sort((a,b)=>b.ts-a.ts).map(x=>{
   const ss=sessionsByDay[x.k]||[];
-  const timedSessions=ss.filter(s=>(+s.duration||0)>0);
+  const timedSessions=ss.filter(s=>(+s.duration||0)>0&&(s.laps||[]).length>0);
   const timedMs=timedSessions.reduce((n,s)=>n+(+s.duration||0),0);
   const timedLaps=timedSessions.reduce((n,s)=>n+(s.laps||[]).length,0);
   const timeSummary=timedSessions.length?` / 운동시간 ${fmtDurationShort(timedMs)}`:"";
-  const timed=ss.length?`<div class="small hidden" id="sessions-${x.k}" style="padding:7px 0 2px 0">${ss.map((s,i)=>{const n=(s.laps||[]).length;return `운동 ${i+1} · ${fmtDurationShort(s.duration||0)}${n?` · +${n}회`:""}`}).join("<br>")}</div>`:"";
-  const click=ss.length?` onclick="document.getElementById('sessions-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`:"";
-  return `<div class="history"${click}><div style="width:100%"><b>${x.k.replaceAll("-",".")} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${timeSummary}</b>${timed}</div></div>`;
+  const validSessions=ss.filter(s=>(s.laps||[]).length>0);
+  const timed=validSessions.length?`<div class="small hidden" id="sessions-${x.k}" style="padding:7px 0 2px 0">${validSessions.map((s,i)=>`시간기록 ${i+1} · ${fmtDurationShort(s.duration||0)}`).join("<br>")}</div>`:"";
+  const click=validSessions.length?` onclick="document.getElementById('sessions-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`:"";
+  const kd=new Date(x.ts),dateLabel=(period==="thisMonth"||period==="lastMonth")?`${kd.getMonth()+1}월 ${kd.getDate()}일`:`${kd.getFullYear()}.${String(kd.getMonth()+1).padStart(2,"0")}.${String(kd.getDate()).padStart(2,"0")}`;
+  return `<div class="history"${click}><div style="width:100%"><b>${dateLabel} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${timeSummary}</b>${timed}</div></div>`;
  }).join("")||'<div class="small">운동기록이 없습니다.</div>';
 }
 function resetAll(){
@@ -344,7 +348,7 @@ async function installApp(){
  if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;refreshInstallCard();return}
  alert("오르GO 설치 방법\n\n① 휴대폰 화면 오른쪽 아래 ⋮ 를 누른 뒤 ‘다른 브라우저로 열기’를 누르세요.\n\n② 열린 화면에서 ‘오르GO 설치하기’를 누른 뒤 ‘추가’를 누르세요.\n\n홈 화면에 오르GO가 설치됩니다.");
 }
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=83c"));
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=83d"));
 refreshInstallCard();
 showApp();
 </script></body></html>
