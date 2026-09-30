@@ -231,9 +231,28 @@ function changeRound(d){
    const li=activeWorkout.laps.lastIndexOf(removedTs);if(li>=0){activeWorkout.laps.splice(li,1);localStorage.setItem("orgo_active_workout_v083",JSON.stringify(activeWorkout));renderWorkout();}
   }
   let changed=false;
-  for(let si=workoutSessions.length-1;si>=0;si--){const ls=workoutSessions[si].laps||[];const li=ls.lastIndexOf(removedTs);if(li>=0){ls.splice(li,1);workoutSessions[si].laps=ls;changed=true;break}}
+  for(let si=workoutSessions.length-1;si>=0;si--){const ls=workoutSessions[si].laps||[];const li=ls.lastIndexOf(removedTs);if(li>=0){ls.splice(li,1);if(ls.length===0)workoutSessions.splice(si,1);else workoutSessions[si].laps=ls;changed=true;break}}
   if(changed)localStorage.setItem("orgo_workout_sessions_v083",JSON.stringify(workoutSessions));
  }
+ renderToday();render();
+}
+
+function removeOneFromDay(k){
+ const candidates=[];
+ logs.forEach((x,i)=>{if(dayKey(x.ts)===k && (+x.rounds||0)>0)candidates.push({x,i});});
+ if(!candidates.length)return alert("이 날짜에서 삭제할 기록이 없습니다.");
+ if(!confirm(`${k} 기록에서 1회만 삭제할까요?\n실제 운동기록은 남고 1회분만 차감됩니다.`))return;
+ const {x,i}=candidates[candidates.length-1];
+ const rounds=+x.rounds||0;
+ if(rounds<=1){
+   const removedTs=+x.ts;logs.splice(i,1);
+   for(let si=workoutSessions.length-1;si>=0;si--){const ls=workoutSessions[si].laps||[];const li=ls.lastIndexOf(removedTs);if(li>=0){ls.splice(li,1);if(ls.length===0)workoutSessions.splice(si,1);else workoutSessions[si].laps=ls;break}}
+ }else{
+   const ratio=(rounds-1)/rounds;
+   x.rounds=rounds-1;x.steps=(+x.steps||0)*ratio;x.height=(+x.height||0)*ratio;if(x.floors!=null)x.floors=(+x.floors||0)*ratio;
+ }
+ localStorage.setItem("orgo_logs_v06",JSON.stringify(logs));
+ localStorage.setItem("orgo_workout_sessions_v083",JSON.stringify(workoutSessions));
  renderToday();render();
 }
 function fmtDuration(ms){const sec=Math.max(0,Math.floor(ms/1000)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;return h?`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;}
@@ -324,8 +343,9 @@ function render(){
   const timedLaps=timedSessions.reduce((n,s)=>n+(s.laps||[]).length,0);
   const timeSummary=timedSessions.length?` / 운동시간 ${fmtDurationShort(timedMs)}`:"";
   const validSessions=ss.filter(s=>(s.laps||[]).length>0);
-  const timed=validSessions.length?`<div class="small hidden" id="sessions-${x.k}" style="padding:7px 0 2px 0">${validSessions.map((s,i)=>`시간기록 ${i+1} · ${fmtDurationShort(s.duration||0)}`).join("<br>")}</div>`:"";
-  const click=validSessions.length?` onclick="document.getElementById('sessions-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`:"";
+  const sessionLines=validSessions.map((s,i)=>`시간기록 ${i+1} · ${fmtDurationShort(s.duration||0)}`).join("<br>");
+  const timed=`<div class="small hidden" id="sessions-${x.k}" style="padding:7px 0 2px 0">${sessionLines}${sessionLines?"<br>":""}<button class="secondary" style="margin-top:7px;padding:7px 10px;width:auto" onclick="event.stopPropagation();removeOneFromDay('${x.k}')">이 날짜에서 1회 삭제</button></div>`;
+  const click=` onclick="document.getElementById('sessions-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`;
   const kd=new Date(x.ts),dateLabel=(period==="thisMonth"||period==="lastMonth")?`${kd.getMonth()+1}월 ${kd.getDate()}일`:`${kd.getFullYear()}.${String(kd.getMonth()+1).padStart(2,"0")}.${String(kd.getDate()).padStart(2,"0")}`;
   return `<div class="history"${click}><div style="width:100%"><b>${dateLabel} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${timeSummary}</b>${timed}</div></div>`;
  }).join("")||'<div class="small">운동기록이 없습니다.</div>';
