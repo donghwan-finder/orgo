@@ -416,8 +416,16 @@ function render(){
   const timeSummary=timedSessions.length?` / 운동시간 ${fmtDurationShort(timedMs)}`:"";
   const validSessions=ss.filter(s=>(s.laps||[]).length>0);
   const names=[...new Set(logs.filter(l=>dayKey(l.ts)===x.k).map(l=>l.buildingName||"기존 등록 건물"))].join(", ");
-  const sessionLines=validSessions.map((s,i)=>{const sd=new Date(s.start),ed=new Date(s.end||s.start);const tm=d=>d.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});return `<div style="padding:5px 0"><b>${s.buildingName||names||"운동 건물"}</b> · ${tm(sd)}~${tm(ed)} · ${fmtDurationShort(s.duration||0)} · ${(s.laps||[]).length}회</div>`}).join("");
-  const timed=`<div class="small hidden" id="sessions-${x.k}" style="padding:8px 0 2px 0"><div style="margin-bottom:5px">건물 ${names||"기존 등록 건물"} · ${x.rounds}회 · ${x.steps.toLocaleString()}계단 · 상승 ${fmt(x.height,1)}m</div>${sessionLines}<div class="detail-actions"><button class="danger" onclick="event.stopPropagation();removeOneFromDay('${x.k}')">기록 수정/삭제</button></div></div>`;
+  const sessionLines=validSessions.map((s,i)=>{
+   const sd=new Date(s.start),ed=new Date(s.end||s.start);
+   const tm=d=>d.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+   const laps=(s.laps||[]).map(Number).filter(t=>Number.isFinite(t)&&t>=+s.start).sort((a,b)=>a-b);
+   let prev=+s.start;
+   const lapLines=laps.map((t,li)=>{const lapMs=Math.max(0,t-prev);prev=t;return `<div style="padding:3px 0 3px 12px">${li+1}회차 · ${fmtDurationShort(lapMs)}</div>`}).join("");
+   const lapDetail=lapLines?`<div style="margin-top:5px"><b>회차별 시간</b>${lapLines}</div>`:"";
+   return `<div style="padding:5px 0"><b>${s.buildingName||names||"운동 건물"}</b> · ${tm(sd)}~${tm(ed)} · ${fmtDurationShort(s.duration||0)}${lapDetail}</div>`;
+  }).join("");
+  const timed=`<div class="small hidden" id="sessions-${x.k}" style="padding:8px 0 2px 0">${sessionLines}<div class="detail-actions"><button class="danger" onclick="event.stopPropagation();removeOneFromDay('${x.k}')">기록 수정/삭제</button></div></div>`;
   const click=` onclick="document.getElementById('sessions-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`;
   const kd=new Date(x.ts),dateLabel=false?`${kd.getMonth()+1}월 ${kd.getDate()}일`:`${kd.getFullYear()}.${String(kd.getMonth()+1).padStart(2,"0")}.${String(kd.getDate()).padStart(2,"0")}`;
   return `<div class="history"${click}><div style="width:100%"><b>${dateLabel} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${timeSummary}</b>${timed}</div></div>`;
