@@ -449,7 +449,20 @@ async function installApp(){
  if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;refreshInstallCard();return}
  alert("오르GO 설치 방법\n\n① 휴대폰 화면 오른쪽 아래 ⋮ 를 누른 뒤 ‘다른 브라우저로 열기’를 누르세요.\n\n② 열린 화면에서 ‘오르GO 설치하기’를 누른 뒤 ‘추가’를 누르세요.\n\n홈 화면에 오르GO가 설치됩니다.");
 }
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js?v=83f"));
+if("serviceWorker" in navigator){
+ let swRefreshing=false;
+ navigator.serviceWorker.addEventListener("controllerchange",()=>{
+  if(swRefreshing)return;
+  swRefreshing=true;
+  window.location.reload();
+ });
+ window.addEventListener("load",async()=>{
+  try{
+   const reg=await navigator.serviceWorker.register("./service-worker.js?v=83g");
+   await reg.update();
+  }catch(err){console.warn("오르GO 업데이트 확인 실패",err);}
+ });
+}
 refreshInstallCard();fillBuildingCountryOptions("대한민국");updateBuildingRegionOptions();applyFontSize();
 showApp();showTab("workout");
 </script></body></html>
