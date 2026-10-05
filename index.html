@@ -37,6 +37,10 @@ button{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-w
 
 :root{--fs:1}body{font-size:calc(16px * var(--fs))}input,select,button{font-size:calc(16px * var(--fs))}.label,.small{font-size:calc(12px * var(--fs))}h2{font-size:calc(18px * var(--fs))}.section-banner{font-size:calc(20px * var(--fs))}.target{font-size:calc(25px * var(--fs))}.num{font-size:calc(21px * var(--fs))}.bigcount{font-size:calc(58px * var(--fs))}.bottom-nav button{font-size:10px}.bottom-nav .nav-icon{font-size:20px}
 
+@media (min-width:521px){
+  .workout-building-summary{display:block}
+  .workout-thumb{width:100%;height:220px;margin-bottom:10px}
+}
 @media (max-width:520px){
   body[data-font-size="xl"] .status-row{display:grid;grid-template-columns:1fr;align-items:stretch}
   body[data-font-size="xl"] .status-row select{width:100%;min-width:0}
@@ -434,7 +438,7 @@ function render(){
   const timed=`<div class="small hidden" id="sessions-${x.k}" style="padding:8px 0 2px 0">${sessionLines}<div class="detail-actions"><button class="danger" onclick="event.stopPropagation();removeOneFromDay('${x.k}')">기록 수정/삭제</button></div></div>`;
   const click=` onclick="document.getElementById('sessions-${x.k}').classList.toggle('hidden')" style="cursor:pointer"`;
   const kd=new Date(x.ts),dateLabel=false?`${kd.getMonth()+1}월 ${kd.getDate()}일`:`${kd.getFullYear()}.${String(kd.getMonth()+1).padStart(2,"0")}.${String(kd.getDate()).padStart(2,"0")}`;
-  return `<div class="history"${click}><div style="width:100%"><b>${dateLabel} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${timeSummary}</b>${timed}</div></div>`;
+  return `<div class="history"${click}><div style="width:100%"><b>${dateLabel} — ${x.rounds}회 / ${x.steps.toLocaleString()}계단 / 상승 ${fmt(x.height,1)}m${timeSummary}</b><div class="small" style="margin-top:7px;color:var(--green);font-weight:800">회차별 시간 · 기록 수정 ›</div>${timed}</div></div>`;
  }).join("")||'<div class="small">운동기록이 없습니다.</div>';
 }
 const fontScales={small:0.92,normal:1,large:1.10,xlarge:1.20};
