@@ -118,7 +118,7 @@ body[data-font-size="xl"] .history-custom-grid{grid-template-columns:1fr}
 <div style="margin-top:9px"><button id="endWorkoutBtn" class="secondary" onclick="endWorkout()" disabled>운동 종료</button></div>
 </section>
 
-<section id="calorieResultCard" class="card hidden"><h2>🔥 추정 소비열량</h2><div id="calorieResultBody"></div></section>
+<section id="calorieResultCard" class="card hidden"><div id="calorieResultBody"></div></section>
 
 <section id="mountainCard" class="card hidden">
 <h2>지금 오르고 있는 산</h2>
@@ -130,7 +130,7 @@ body[data-font-size="xl"] .history-custom-grid{grid-template-columns:1fr}
 </div>
 
 <div id="recordPage" class="tab-page hidden">
-<section id="cumulativeCalorieCard" class="card hidden"><h2>당신의 추정 소비열량</h2><div class="record-workout-summary" style="grid-template-columns:repeat(2,1fr)"><div><span class="small">추정 소비열량</span><b id="cumulativeKcal">0 kcal</b></div><div><span class="small" id="cumulativeFoodLabel">선택 음식</span><b id="cumulativeFood">-</b></div></div></section>
+<section id="cumulativeCalorieCard" class="card hidden"><div class="record-workout-summary" style="grid-template-columns:repeat(2,1fr)"><div><b id="cumulativeKcal">🔥 0 kcal</b></div><div><b id="cumulativeFood">🥤 콜라 0캔</b></div></div><div style="margin-top:12px;text-align:center;font-weight:800" id="horizontalDistance">🌏 평지 걷기 환산거리 0.0km</div><div class="small" style="text-align:center;margin-top:5px">평지 걷기 4.5km/h · 3.8 MET 기준</div></section>
 <section id="summaryCard" class="card hidden">
 <h2 id="summaryTitle">누적 운동기록</h2>
 <div class="grid">
@@ -155,7 +155,7 @@ body[data-font-size="xl"] .history-custom-grid{grid-template-columns:1fr}
 <div id="settingsPage" class="tab-page hidden">
 <section id="settingsInstallCard" class="card hidden"><h2>오르GO 설치</h2><div class="small">홈 화면에 설치하면 앱처럼 바로 실행할 수 있습니다.</div><div style="height:10px"></div><button id="settingsInstallBtn" class="primary" onclick="installApp()">📱 오르GO 설치하기</button><div id="settingsInstallHelp" class="small" style="margin-top:9px"></div></section>
 <section id="displaySettingsCard" class="card hidden"><h2>글자 크기</h2><div class="small">보기 편한 글자 크기를 선택하세요. 선택값은 이 기기에 저장됩니다.</div><div class="font-choice" style="margin-top:10px"><button id="fontSmall" class="secondary" onclick="setFontSize('small')">작게</button><button id="fontNormal" class="secondary" onclick="setFontSize('normal')">기본</button><button id="fontLarge" class="secondary" onclick="setFontSize('large')">크게</button><button id="fontXLarge" class="secondary" onclick="setFontSize('xlarge')">아주 크게</button></div></section>
-<section id="appInfoCard" class="card hidden"><h2>앱 정보</h2><div class="info-list"><div class="info-item"><b>오르GO v0.8.3</b><br><b>계단만 있으면 어디든 산이 된다.</b></div><div class="info-item">오르GO는 계단운동을 기록하고, 내가 오른 높이를 실제 산을 오르는 과정처럼 보여주는 계단운동 앱입니다.</div></div><div style="height:10px"></div><button class="ghost" onclick="document.getElementById('manualBox').classList.toggle('hidden')">📖 오르GO 사용방법</button><div id="manualBox" class="hidden"><ol class="manual-steps"><li><b>클라이머 정보 등록</b> — 이름 또는 닉네임과 기본 정보를 저장합니다.</li><li><b>운동할 건물 등록</b> — 소재지, 사진, 층수와 계단 정보를 등록합니다.</li><li><b>운동할 건물 선택</b> — 운동 화면에서 오늘 오를 건물을 고릅니다.</li><li><b>운동 시작</b> — 운동 시작을 누르면 시간이 기록됩니다.</li><li><b>정상 도착마다 +1</b> — 정상에 도착할 때마다 +1을 누릅니다.</li><li><b>운동 종료</b> — 운동을 마치면 종료를 누릅니다.</li><li><b>기록 확인</b> — 누적 운동기록, 날짜별 기록과 내가 오른 산을 확인합니다.</li></ol></div></section>
+<section id="appInfoCard" class="card hidden"><h2>앱 정보</h2><div class="info-list"><div class="info-item"><b>오르GO v0.8.4</b><br><b>계단만 있으면 어디든 산이 된다.</b></div><div class="info-item">오르GO는 계단운동을 기록하고, 내가 오른 높이를 실제 산을 오르는 과정처럼 보여주는 계단운동 앱입니다.</div></div><div style="height:10px"></div><button class="ghost" onclick="document.getElementById('manualBox').classList.toggle('hidden')">📖 오르GO 사용방법</button><div id="manualBox" class="hidden"><ol class="manual-steps"><li><b>클라이머 정보 등록</b> — 이름 또는 닉네임과 기본 정보를 저장합니다.</li><li><b>운동할 건물 등록</b> — 소재지, 사진, 층수와 계단 정보를 등록합니다.</li><li><b>운동할 건물 선택</b> — 운동 화면에서 오늘 오를 건물을 고릅니다.</li><li><b>운동 시작</b> — 운동 시작을 누르면 시간이 기록됩니다.</li><li><b>정상 도착마다 +1</b> — 정상에 도착할 때마다 +1을 누릅니다.</li><li><b>운동 종료</b> — 운동을 마치면 종료를 누릅니다.</li><li><b>기록 확인</b> — 누적 운동기록, 날짜별 기록과 내가 오른 산을 확인합니다.</li></ol></div></section>
 <section id="calorieSettingsCard" class="card hidden"><button class="calorie-settings-toggle" onclick="toggleCalorieSettings()"><span><b>소비열량 조견표</b></span><span>›</span></button><div id="calorieSettingsBody" class="hidden"><div class="label" style="margin-top:14px">체중 (선택)</div><div class="row"><input id="calorieWeightInput" type="number" min="30" max="200" step="0.1" placeholder="미입력 시 70kg 기준"><button class="secondary" onclick="saveCalorieWeight()">적용</button></div><div class="label" style="margin-top:14px">비교 음식 (필수)</div><select id="calorieFoodSelect" onchange="saveCalorieFood(this.value)"><option value="cola">🥤 콜라</option><option value="rice">🍚 공기밥</option><option value="ramen">🍜 라면</option><option value="burger">🍔 햄버거</option></select><div id="calorieFoodHelp" class="small" style="margin-top:8px"></div><div style="margin-top:14px"><b id="calorieWeightTitle">70kg 기준</b></div><div id="calorieTableWrap"></div><div class="small" style="margin-top:10px">기준: <i>2024 Compendium of Physical Activities</i>의 일반적인 계단 오르기 기준(6.8 MET)<br>※ 실제 소비열량은 오르는 속도와 개인의 신체조건 등에 따라 달라질 수 있습니다.</div></div></section>
 <section id="dataManageCard" class="card hidden"><h2>오르GO 데이터 관리</h2><div class="small">잘못된 운동은 기록 화면에서 개별 수정·삭제할 수 있습니다.</div><div class="danger-zone"><b>운동기록 전체 삭제</b><div class="small">운동기록과 누적 운동성과만 삭제합니다. 클라이머·건물 정보는 유지됩니다.</div><button class="danger danger-compact" onclick="resetWorkoutRecords()">운동기록 전체 삭제</button></div></section>
 </div>
@@ -438,7 +438,7 @@ function render(){
  const timedPureMs=timedSessionsAll.reduce((n,s)=>{const laps=(s.laps||[]).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);if(!laps.length)return n;const first=Math.max(0,laps[0]-(+s.start||0));return n+first*laps.length;},0);
  const rr=document.getElementById("recordWorkoutRounds"),rs=document.getElementById("recordWorkoutSteps"),rt=document.getElementById("recordWorkoutTime");
  if(rr)rr.textContent=timedRounds.toLocaleString()+"회";if(rs)rs.textContent=timedSteps.toLocaleString()+"계단";if(rt)rt.textContent=fmtDurationShort(timedPureMs);
- const cumulativeCard=document.getElementById("cumulativeCalorieCard"),ck=document.getElementById("cumulativeKcal"),cf=document.getElementById("cumulativeFood"),cfl=document.getElementById("cumulativeFoodLabel");
+ const cumulativeCard=document.getElementById("cumulativeCalorieCard"),ck=document.getElementById("cumulativeKcal"),cf=document.getElementById("cumulativeFood"),horizontalDistance=document.getElementById("horizontalDistance");
  if(cumulativeCard){
   cumulativeCard.classList.toggle("hidden",S<=0);
   if(S>0){
@@ -448,9 +448,9 @@ function render(){
     cumulativeKcal=kcalForMinutes(calorieWeight(),estimatedTotalPureMs/60000);
    }else{cumulativeKcal=S*0.15;}
    const f=calorieFoods[calorieFoodKey()]||calorieFoods.cola,amount=foodAmount(cumulativeKcal,f.kcal);
-   if(ck)ck.textContent=`약 ${Math.round(cumulativeKcal).toLocaleString()} kcal`;
-   if(cfl)cfl.textContent=f.name+" 환산";
-   if(cf)cf.textContent=`${f.icon} 약 ${formatFoodAmount(amount)}${f.unit}`;
+   if(ck)ck.textContent=`🔥 ${Math.round(cumulativeKcal).toLocaleString()} kcal`;
+   if(cf)cf.textContent=`${f.icon} ${f.name} ${formatFoodAmount(amount)}${f.unit}`;
+   if(horizontalDistance)horizontalDistance.textContent=`🌏 평지 걷기 환산거리 ${horizontalKm(cumulativeKcal,calorieWeight()).toFixed(1)}km`;
   }
  }
  const dc=decompose(H);
@@ -495,6 +495,9 @@ function render(){
  }).join("")||'<div class="small">운동기록이 없습니다.</div>';
 }
 const CALORIE_MET=6.8;
+// 2024 Compendium of Physical Activities: level walking, 4.5km/h, 3.8 MET.
+const WALKING_MET=3.8, WALKING_KMH=4.5;
+function horizontalKm(kcal,weight){const kcalPerKm=WALKING_MET*3.5*weight/200*(60/WALKING_KMH);return kcalPerKm>0?kcal/kcalPerKm:0;}
 const calorieFoods={cola:{name:"콜라",icon:"🥤",unit:"캔",kcal:100,label:"1캔 100 kcal"},rice:{name:"공기밥",icon:"🍚",unit:"공기",kcal:300,label:"1공기 300 kcal"},ramen:{name:"라면",icon:"🍜",unit:"봉",kcal:500,label:"1봉 500 kcal"},burger:{name:"햄버거",icon:"🍔",unit:"개",kcal:300,label:"1개 300 kcal"}};
 function calorieWeight(){const v=parseFloat(localStorage.getItem("orgo_calorie_weight_v083")||"");return Number.isFinite(v)&&v>0?v:70;}
 function calorieFoodKey(){const k=localStorage.getItem("orgo_calorie_food_v083")||"cola";return calorieFoods[k]?k:"cola";}
@@ -505,7 +508,7 @@ function renderCalorieSettings(){if(!document.getElementById("calorieTableWrap")
 function saveCalorieWeight(){const raw=calorieWeightInput.value.trim();if(!raw){localStorage.removeItem("orgo_calorie_weight_v083");renderCalorieSettings();render();return}const w=parseFloat(raw);if(!Number.isFinite(w)||w<30||w>200)return alert("체중은 30~200kg 사이로 입력해 주세요.");localStorage.setItem("orgo_calorie_weight_v083",String(w));renderCalorieSettings();render();}
 function saveCalorieFood(k){if(!calorieFoods[k])return;localStorage.setItem("orgo_calorie_food_v083",k);renderCalorieSettings();render();}
 function sessionCalorieData(s){if(!s||!(s.laps||[]).length)return null;if(s.calorie&&Number.isFinite(+s.calorie.kcal))return s.calorie;const first=Math.max(0,(+s.laps[0])-(+s.start));const pure=first*(s.laps||[]).length,w=calorieWeight(),k=calorieFoodKey(),kcal=kcalForMinutes(w,pure/60000),f=calorieFoods[k];return {weight:w,weightIsDefault:!localStorage.getItem("orgo_calorie_weight_v083"),met:CALORIE_MET,pureMs:pure,kcal:Math.round(kcal),foodKey:k,foodAmount:foodAmount(kcal,f.kcal)};}
-function renderLastCalorieResult(){const card=document.getElementById("calorieResultCard"),body=document.getElementById("calorieResultBody");if(!card||!body)return;const today=dayKey(Date.now()),s=[...workoutSessions].reverse().find(x=>dayKey(x.start)===today&&x.calorie);if(!s){card.classList.add("hidden");return}const c=s.calorie,f=calorieFoods[c.foodKey]||calorieFoods.cola;card.classList.remove("hidden");body.innerHTML=`<div class="calorie-result"><div class="small">순수 계단 오르기 시간 ${fmtDurationShort(c.pureMs)}</div><div class="kcal">약 ${Math.round(c.kcal)} kcal</div><div class="small">${c.weight}kg 기준${c.weightIsDefault?" (기본)":""}</div><div class="food-compare">${f.icon} ${f.name} 약 ${formatFoodAmount(c.foodAmount)}${f.unit}</div></div>`;}
+function renderLastCalorieResult(){const card=document.getElementById("calorieResultCard"),body=document.getElementById("calorieResultBody");if(!card||!body)return;const today=dayKey(Date.now()),s=[...workoutSessions].reverse().find(x=>dayKey(x.start)===today&&x.calorie);if(!s){card.classList.add("hidden");return}const c=s.calorie,f=calorieFoods[c.foodKey]||calorieFoods.cola;card.classList.remove("hidden");body.innerHTML=`<div class="calorie-result"><div class="small">순수 계단 오르기 시간 ${fmtDurationShort(c.pureMs)}</div><div class="kcal">🔥 ${Math.round(c.kcal)} kcal</div><div class="small">${c.weight}kg 기준${c.weightIsDefault?" (기본)":""}</div><div class="food-compare">${f.icon} ${f.name} ${formatFoodAmount(c.foodAmount)}${f.unit}</div></div>`;}
 const fontScales={small:0.92,normal:1,large:1.10,xlarge:1.20};
 function applyFontSize(){const key=localStorage.getItem("orgo_font_size_v083")||"normal";document.documentElement.style.setProperty("--fs",fontScales[key]);document.body.dataset.fontSize=key==="xlarge"?"xl":key;["Small","Normal","Large","XLarge"].forEach(x=>{const b=document.getElementById("font"+x);if(b)b.className="secondary"});const id={small:"fontSmall",normal:"fontNormal",large:"fontLarge",xlarge:"fontXLarge"}[key],btn=document.getElementById(id);if(btn)btn.className="primary";}
 function setFontSize(key){localStorage.setItem("orgo_font_size_v083",key);applyFontSize();}
